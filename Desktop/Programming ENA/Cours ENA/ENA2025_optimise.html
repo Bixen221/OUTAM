@@ -1,0 +1,2331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENA TSS 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== VARIABLES ===== */
+:root {
+  --bg:#0D0D12;--surface:#14141C;--surface2:#1C1C28;
+  --border:#252535;--border2:#30304A;
+  --accent:#F0B429;--accent2:#E8864A;
+  --text:#E8E4DC;--text2:#9090A8;--text3:#55556A;
+  --green:#3ECF8E;--red:#FF6B6B;--blue:#5B8DEF;
+  --fc-back-bg:#131F18;--fc-back-border:rgba(62,207,142,.35);
+}
+body.light {
+  --bg:#F4F2EE;--surface:#FFFFFF;--surface2:#EEECEA;
+  --border:#DDD9D0;--border2:#C8C4BA;
+  --accent:#C8860A;--accent2:#C8662A;
+  --text:#1A1814;--text2:#5A5650;--text3:#9A9690;
+  --green:#1E9E6A;--red:#D94040;--blue:#2563EB;
+  --fc-back-bg:#EFF8F3;--fc-back-border:rgba(30,158,106,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
+
+/* ===== SIDEBAR ===== */
+#sidebar{width:272px;min-width:272px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:transform .25s ease,width .25s ease,min-width .25s ease;position:relative;z-index:10;}
+#sidebar.collapsed{transform:translateX(-100%);width:0;min-width:0;}
+.sidebar-header{padding:16px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sidebar-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--accent);letter-spacing:-.5px;}
+.sidebar-logo span{color:var(--text2);font-weight:400;}
+
+/* Search */
+.search-wrap{position:relative;padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#search-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+#search-input:focus{border-color:var(--accent);}
+#search-input::placeholder{color:var(--text3);}
+.search-icon{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;opacity:.5;}
+
+/* Subject list */
+#subject-list{flex:1;overflow-y:auto;padding:4px 0 8px;}
+#subject-list::-webkit-scrollbar{width:3px;}
+#subject-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* Subject rows */
+.subject-header{display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;user-select:none;transition:background .12s;}
+.subject-header:hover{background:var(--surface2);}
+.subject-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.subject-name{flex:1;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chevron{font-size:9px;color:var(--text3);transition:transform .2s;flex-shrink:0;}
+.subject-header.expanded .chevron{transform:rotate(90deg);}
+.icon-btn{background:none;border:none;color:transparent;cursor:pointer;padding:2px 3px;border-radius:4px;font-size:11px;transition:color .12s,background .12s;line-height:1;flex-shrink:0;}
+.subject-header:hover .icon-btn,.chapter-row:hover .icon-btn{color:var(--text3);}
+.icon-btn:hover{color:var(--red)!important;background:rgba(255,107,107,.1);}
+.icon-btn.edit:hover{color:var(--accent)!important;background:rgba(240,180,41,.1);}
+.chapters-list{display:none;}
+.chapters-list.open{display:block;}
+.chapter-row{display:flex;align-items:center;gap:5px;padding:5px 12px 5px 28px;cursor:pointer;font-size:12px;color:var(--text2);transition:background .12s,color .12s;}
+.chapter-row:hover,.chapter-row.active{background:var(--surface2);color:var(--text);}
+.ch-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ch-status{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;}
+.ch-status.has-notes{background:var(--accent);}
+.ch-status.has-exercises{background:var(--green);}
+
+/* Inline add inputs */
+.add-btn-row{padding:4px 12px;}
+.add-ch-btn-row{padding:3px 12px 3px 28px;}
+.add-inline-btn{display:flex;align-items:center;gap:5px;background:none;border:1px dashed var(--border2);color:var(--text3);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:border-color .15s,color .15s;width:100%;}
+.add-inline-btn:hover{border-color:var(--accent);color:var(--accent);}
+.inline-input-row{display:flex;align-items:center;gap:4px;padding:4px 12px;}
+.inline-input-row.ch{padding-left:28px;}
+.inline-input{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:4px 7px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;min-width:0;}
+.inline-input:focus{border-color:var(--accent);}
+.ok-btn{background:var(--accent);border:none;color:#0D0D12;border-radius:5px;padding:4px 8px;cursor:pointer;font-weight:700;font-size:11px;flex-shrink:0;}
+.x-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;}
+.color-row{display:flex;gap:4px;flex-wrap:wrap;padding:2px 12px 5px;}
+.cswatch{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s;}
+.cswatch:hover{transform:scale(1.2);}
+.cswatch.sel{border-color:white;}
+
+/* Sidebar footer */
+.sidebar-footer{padding:6px 10px;border-top:1px solid var(--border);display:flex;gap:5px;flex-shrink:0;}
+.footer-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.footer-btn:hover{border-color:var(--accent);color:var(--accent);}
+.footer-btn.trash-btn:hover{border-color:var(--red);color:var(--red);}
+.trash-badge{background:var(--red);color:white;border-radius:10px;padding:1px 5px;font-size:9px;font-weight:700;}
+
+/* ===== MAIN ===== */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0;}
+#sidebar-toggle{position:fixed;top:13px;left:13px;z-index:20;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:6px 9px;cursor:pointer;font-size:14px;transition:all .15s;line-height:1;}
+#sidebar-toggle:hover{background:var(--surface2);color:var(--text);}
+
+/* ===== TOPBAR ===== */
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 10px 50px;border-bottom:1px solid var(--border);background:var(--surface);min-height:58px;gap:10px;flex-shrink:0;}
+#topbar-left{min-width:0;flex:1;}
+#topbar-left .subject-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);}
+#topbar-left .chapter-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-right{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+/* tab-bar removed - exercises now in modal */
+#save-indicator{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;white-space:nowrap;}
+#save-indicator.visible{opacity:1;}
+.font-ctrl{display:flex;align-items:center;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1px;}
+.font-ctrl button{background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;width:24px;height:24px;border-radius:4px;transition:background .12s;font-family:'DM Sans',sans-serif;}
+.font-ctrl button:hover{background:var(--border2);}
+.font-ctrl span{font-size:10px;color:var(--text3);min-width:22px;text-align:center;}
+.topbar-icon-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:14px;transition:all .15s;line-height:1;}
+.topbar-icon-btn:hover{background:var(--border2);color:var(--text);}
+
+/* ===== CONTENT ===== */
+#content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.tab-panel{display:flex;flex:1;flex-direction:column;overflow:hidden;}
+
+/* ===== NOTES PANEL ===== */
+#notes-panel{overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:14px 18px 18px;}
+#notes-panel::-webkit-scrollbar{width:4px;}
+#notes-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* Toolbar */
+#editor-toolbar{display:flex;align-items:center;gap:1px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:8px 8px 0 0;flex-wrap:wrap;flex-shrink:0;position:relative;}
+.tb-btn{background:none;border:none;color:var(--text2);cursor:pointer;border-radius:4px;padding:3px 6px;font-size:12.5px;font-family:'DM Sans',sans-serif;font-weight:600;transition:background .12s,color .12s;line-height:1;min-width:24px;text-align:center;}
+.tb-btn:hover{background:var(--surface2);color:var(--text);}
+.tb-btn.active{background:var(--accent);color:#0D0D12;}
+.tb-sep{width:1px;height:14px;background:var(--border2);margin:0 3px;flex-shrink:0;}
+.tb-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:3px 6px;font-size:11.5px;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;}
+
+/* Template picker dropdown */
+#template-picker{display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:6px;z-index:50;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:none;}
+#template-picker.open{display:block;}
+.tpl-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:background .12s;}
+.tpl-item:hover{background:var(--surface2);}
+.tpl-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.tpl-name{font-size:12px;font-weight:600;color:var(--text);}
+.tpl-desc{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* Shortcuts panel */
+#shortcuts-panel{display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:12px 14px;z-index:50;min-width:210px;box-shadow:0 8px 24px rgba(0,0,0,.35);}
+#shortcuts-panel.open{display:block;}
+.sc-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;gap:12px;}
+.sc-key{background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:1px 6px;font-size:10px;color:var(--text2);font-family:monospace;white-space:nowrap;}
+
+/* Rich editor */
+#notes-editor{flex:1;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.85;padding:16px 18px;outline:none;overflow-y:auto;min-height:200px;}
+#notes-editor:empty::before{content:attr(data-placeholder);color:var(--text3);font-style:italic;pointer-events:none;}
+#notes-editor h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;margin:14px 0 6px;color:var(--accent);}
+#notes-editor h2{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin:10px 0 5px;border-bottom:1px solid var(--border);padding-bottom:4px;color:var(--text);}
+#notes-editor h3{font-size:14px;font-weight:700;margin:8px 0 4px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+#notes-editor ul,#notes-editor ol{padding-left:22px;margin:5px 0;}
+#notes-editor li{margin:2px 0;}
+#notes-editor blockquote{border-left:3px solid var(--accent);padding:6px 14px;margin:8px 0;color:var(--text2);font-style:italic;background:var(--surface2);border-radius:0 6px 6px 0;}
+#notes-editor p{margin:3px 0;}
+#notes-editor table{border-collapse:collapse;width:100%;margin:8px 0;}
+#notes-editor td,#notes-editor th{border:1px solid var(--border2);padding:6px 10px;font-size:13px;}
+#notes-editor th{background:var(--surface2);font-weight:600;}
+
+/* Docs section */
+.docs-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;flex-shrink:0;}
+.docs-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-weight:600;}
+#docs-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:16px;}
+.doc-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--text2);}
+.doc-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;line-height:1;transition:color .12s;}
+.doc-chip button:hover{color:var(--red);}
+.no-docs{color:var(--text3);font-size:12px;font-style:italic;}
+.upload-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:5px 11px;cursor:pointer;font-size:11.5px;font-family:'DM Sans',sans-serif;transition:border-color .15s,color .15s;}
+.upload-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* gen-bar removed - now inside exercise modal */
+
+/* exercises panel now inside modal */
+.ex-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;flex-shrink:0;}
+.score-history{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.score-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--text2);}
+.score-pill.best{border-color:var(--green);color:var(--green);}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px;flex-shrink:0;}
+.q-text{font-size:13.5px;font-weight:600;line-height:1.6;margin-bottom:11px;}
+.opt-btn{display:block;width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 12px;margin-bottom:5px;cursor:pointer;font-size:12.5px;font-family:'DM Sans',sans-serif;transition:all .12s;}
+.opt-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(240,180,41,.07);}
+.opt-btn.sel{border-color:var(--accent);background:rgba(240,180,41,.1);}
+.opt-btn.correct{border-color:var(--green);background:rgba(62,207,142,.1);color:var(--green);}
+.opt-btn.wrong{border-color:var(--red);background:rgba(255,107,107,.1);color:var(--red);}
+.opt-btn:disabled{cursor:default;}
+.check-btn{background:var(--accent);border:none;color:#0D0D12;border-radius:7px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:12.5px;font-family:'DM Sans',sans-serif;margin-top:5px;transition:opacity .15s;}
+.check-btn:hover{opacity:.85;}
+.score-display{font-size:14px;font-weight:700;color:var(--accent);margin-top:12px;padding:11px 16px;background:rgba(240,180,41,.1);border-radius:9px;border:1px solid rgba(240,180,41,.25);display:inline-block;}
+.open-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px;flex-shrink:0;}
+details summary{color:var(--accent);cursor:pointer;font-size:11.5px;letter-spacing:.5px;font-weight:600;margin-top:9px;list-style:none;user-select:none;}
+details summary::before{content:"▶  ";font-size:9px;}
+details[open] summary::before{content:"▼  ";}
+.ans-box{margin-top:7px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12.5px;line-height:1.75;color:var(--text2);}
+.fc-counter{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:16px;text-align:center;}
+.fc-wrap{width:400px;max-width:90%;height:230px;margin:0 auto 8px;perspective:1200px;cursor:pointer;}
+.fc-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);}
+.fc-inner.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:22px;backface-visibility:hidden;}
+.fc-front{background:var(--surface);border:1px solid rgba(240,180,41,.35);}
+.fc-front .fc-text{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--accent);text-align:center;line-height:1.4;}
+.fc-back{background:var(--fc-back-bg);border:1px solid var(--fc-back-border);transform:rotateY(180deg);}
+.fc-back .fc-text{font-size:13px;line-height:1.8;color:var(--text2);text-align:center;}
+.fc-hint{font-size:11px;color:var(--text3);font-style:italic;margin-bottom:14px;text-align:center;}
+.fc-nav{display:flex;justify-content:center;gap:8px;}
+.fc-nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;transition:background .12s;}
+.fc-nav-btn:hover:not(:disabled){background:var(--border2);}
+.fc-nav-btn:disabled{opacity:.35;cursor:default;}
+.ex-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:9px;color:var(--text3);font-style:italic;font-size:13.5px;}
+.ex-empty .ei{font-size:38px;}
+
+/* ===== PLACEHOLDER ===== */
+#placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:var(--text3);}
+.ph-icon{font-size:44px;}
+.ph-text{font-size:14px;font-style:italic;font-family:'Playfair Display',serif;}
+
+/* ===== LOADING ===== */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:13px;}
+.spinner{width:30px;height:30px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:12.5px;color:var(--text3);font-style:italic;}
+
+/* ===== DASHBOARD ===== */
+#dashboard{flex:1;overflow-y:auto;padding:22px 22px 22px 50px;}
+#dashboard::-webkit-scrollbar{width:4px;}
+#dashboard::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+.dash-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--accent);}
+.dash-subtitle{font-size:12.5px;color:var(--text3);margin:3px 0 22px;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.stat-val{font-size:26px;font-weight:700;color:var(--accent);font-family:'Playfair Display',serif;}
+.stat-label{font-size:10.5px;color:var(--text3);margin-top:2px;letter-spacing:.3px;}
+.dash-sec{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.recent-list{display:flex;flex-direction:column;gap:6px;margin-bottom:22px;}
+.recent-row{display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:background .12s;}
+.recent-row:hover{background:var(--surface2);}
+.recent-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.recent-info{flex:1;min-width:0;}
+.recent-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recent-sub{font-size:10.5px;color:var(--text3);margin-top:1px;}
+.recent-score{font-size:12px;color:var(--green);font-weight:600;flex-shrink:0;}
+.prog-wrap{background:var(--surface2);border-radius:20px;height:5px;overflow:hidden;flex:1;}
+.prog-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;}
+
+/* ===== ONBOARDING ===== */
+#ob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;backdrop-filter:blur(8px);align-items:center;justify-content:center;}
+#ob-overlay.open{display:flex;}
+#ob-modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:440px;max-width:92vw;padding:28px 32px 24px;}
+.ob-step{display:none;}
+.ob-step.active{display:block;}
+.ob-icon{font-size:40px;margin-bottom:12px;}
+.ob-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--accent);margin-bottom:7px;}
+.ob-desc{font-size:13.5px;color:var(--text2);line-height:1.7;margin-bottom:20px;}
+.ob-nav{display:flex;align-items:center;justify-content:space-between;}
+.ob-dots{display:flex;gap:5px;}
+.ob-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:background .2s;}
+.ob-dot.active{background:var(--accent);}
+.ob-next{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#0D0D12;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:12.5px;font-family:'DM Sans',sans-serif;transition:opacity .15s;}
+.ob-next:hover{opacity:.88;}
+.ob-skip{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:color .15s;}
+.ob-skip:hover{color:var(--text2);}
+
+/* ===== TRASH MODAL ===== */
+#trash-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;backdrop-filter:blur(3px);}
+#trash-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:460px;max-width:92vw;max-height:70vh;z-index:101;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);}
+#trash-modal.open{display:flex;}
+.trash-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);}
+.trash-hdr-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;}
+.danger-btn{background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;transition:background .12s;}
+.danger-btn:hover{background:rgba(255,107,107,.12);}
+.close-modal-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:2px 5px;}
+#trash-list{overflow-y:auto;flex:1;}
+
+/* ===== MOBILE ===== */
+#mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9;backdrop-filter:blur(2px);}
+@media(max-width:680px){
+  #sidebar{position:fixed;top:0;left:0;height:100vh;z-index:10;transform:translateX(-100%);}
+  #sidebar.mob-open{transform:translateX(0);}
+  #mob-overlay.open{display:block;}
+  #topbar{padding-left:48px;}
+  #dashboard{padding-left:48px;}
+  .fc-wrap{width:88%;}
+  #topbar-left .chapter-title{max-width:140px;}
+  .topbar-right{gap:5px;}
+  .font-ctrl{display:none;}
+}
+
+/* ===== DOC VIEWER ===== */
+#doc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:160;backdrop-filter:blur(3px);}
+#doc-modal{display:none;position:fixed;top:0;right:0;height:100vh;width:660px;max-width:96vw;background:var(--surface);border-left:1px solid var(--border2);z-index:161;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.45);}
+#doc-modal.open{display:flex;}
+.doc-modal-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.doc-modal-name{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.doc-modal-type{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;flex-shrink:0;}
+#doc-viewer-frame{flex:1;border:none;width:100%;background:var(--bg);}
+#doc-viewer-text{flex:1;overflow-y:auto;padding:22px 26px;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.85;color:var(--text2);white-space:pre-wrap;word-break:break-word;display:none;}
+#doc-viewer-text::-webkit-scrollbar{width:4px;}
+#doc-viewer-text::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* Doc chips with open btn */
+.doc-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 5px 3px 10px;font-size:11.5px;color:var(--text2);transition:border-color .15s;}
+.doc-chip:hover{border-color:var(--accent);}
+.doc-chip-open{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;line-height:1;padding:1px 4px;border-radius:4px;transition:color .12s,background .12s;}
+.doc-chip-open:hover{color:var(--accent);background:rgba(240,180,41,.1);}
+.doc-chip-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;line-height:1;padding:1px 4px;border-radius:4px;transition:color .12s,background .12s;}
+.doc-chip-del:hover{color:var(--red);background:rgba(255,107,107,.1);}
+
+/* ===== SEARCH HIGHLIGHT ===== */
+.hl{background:rgba(240,180,41,.3);border-radius:2px;padding:0 1px;}
+
+/* ===== IBADAH PANEL ===== */
+#ib-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:170;backdrop-filter:blur(4px);}
+#ib-modal{display:none;position:fixed;top:0;right:0;height:100vh;width:520px;max-width:96vw;background:var(--surface);border-left:1px solid var(--border2);z-index:171;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.45);}
+#ib-modal.open{display:flex;}
+.ib-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);}
+.ib-hdr-left{display:flex;flex-direction:column;gap:2px;}
+.ib-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--accent);}
+.ib-date{font-size:11px;color:var(--text3);}
+.ib-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:18px;}
+.ib-body::-webkit-scrollbar{width:4px;}
+.ib-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+.ib-section{display:flex;flex-direction:column;gap:8px;}
+.ib-section-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);font-weight:600;display:flex;align-items:center;gap:6px;}
+.ib-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Global progress bar */
+.ib-global-bar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.ib-global-pct{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--accent);min-width:48px;}
+.ib-global-info{flex:1;}
+.ib-global-label{font-size:12px;color:var(--text2);margin-bottom:5px;}
+.ib-prog-track{background:var(--border);border-radius:20px;height:7px;overflow:hidden;}
+.ib-prog-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width .5s ease;}
+/* Prayer cards */
+.prayer-card{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;transition:border-color .15s;}
+.prayer-card.done{border-color:var(--green);background:rgba(62,207,142,.06);}
+.prayer-name{flex:1;font-size:13px;font-weight:600;}
+.prayer-target{font-size:11px;color:var(--text3);margin-top:1px;}
+.prayer-counter{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ctr-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:'DM Sans',sans-serif;}
+.ctr-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ctr-val{font-size:15px;font-weight:700;min-width:28px;text-align:center;color:var(--text);}
+.ctr-val.complete{color:var(--green);}
+/* Lecture row */
+.lecture-row{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .15s;}
+.lecture-row:hover{border-color:var(--accent);}
+.lecture-row.done{border-color:var(--green);background:rgba(62,207,142,.06);}
+.lecture-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;flex-shrink:0;}
+.lecture-row.done .lecture-check{background:var(--green);border-color:var(--green);color:white;}
+.lecture-label{flex:1;font-size:13px;font-weight:600;}
+/* Dhikr row */
+.dhikr-row{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;transition:border-color .15s;}
+.dhikr-row.done{border-color:var(--green);background:rgba(62,207,142,.06);}
+.dhikr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.dhikr-label{font-size:13px;font-weight:600;}
+.dhikr-count{font-size:12px;color:var(--text3);}
+.dhikr-count.complete{color:var(--green);font-weight:700;}
+.dhikr-track{background:var(--border);border-radius:20px;height:5px;overflow:hidden;margin-bottom:8px;}
+.dhikr-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--blue),var(--accent));transition:width .3s ease;}
+.dhikr-btns{display:flex;gap:5px;}
+.dhikr-add{background:var(--surface);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .12s;}
+.dhikr-add:hover{border-color:var(--accent);color:var(--accent);}
+.dhikr-add.x10{font-size:11px;}
+/* History */
+.hist-row{display:flex;gap:5px;align-items:flex-end;}
+.hist-day{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.hist-bar-wrap{background:var(--border);border-radius:4px;height:40px;width:100%;display:flex;align-items:flex-end;overflow:hidden;}
+.hist-bar-fill{width:100%;border-radius:4px;background:linear-gradient(0deg,var(--accent),var(--accent2));transition:height .4s ease;}
+.hist-label{font-size:9px;color:var(--text3);text-align:center;}
+.hist-pct{font-size:9px;color:var(--text3);}
+/* Reset btn */
+.ib-reset-btn{background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.ib-reset-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ===== ROMANS MODULE ===== */
+#rom-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:180;backdrop-filter:blur(5px);}
+#rom-modal{display:none;position:fixed;inset:0;background:var(--bg);z-index:181;flex-direction:row;}
+#rom-modal.open{display:flex;}
+/* Sidebar collections */
+#rom-sidebar{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;height:100%;}
+#rom-sidebar-hdr{padding:14px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.rom-sidebar-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:900;color:var(--accent);}
+#rom-list{flex:1;overflow-y:auto;padding:5px 0;}
+#rom-list::-webkit-scrollbar{width:3px;}
+#rom-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+.rom-coll-hdr{display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;user-select:none;transition:background .12s;}
+.rom-coll-hdr:hover{background:var(--surface2);}
+.rom-coll-name{flex:1;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);}
+.rom-coll-chevron{font-size:9px;color:var(--text3);transition:transform .2s;flex-shrink:0;}
+.rom-coll-hdr.expanded .rom-coll-chevron{transform:rotate(90deg);}
+.rom-novels-list{display:none;}
+.rom-novels-list.open{display:block;}
+.rom-novel-row{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 22px;cursor:pointer;transition:background .12s;}
+.rom-novel-row:hover,.rom-novel-row.active{background:var(--surface2);}
+.rom-novel-thumb{width:26px;height:36px;border-radius:3px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
+.rom-novel-thumb-ph{width:26px;height:36px;border-radius:3px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.rom-novel-info{flex:1;min-width:0;}
+.rom-novel-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rom-novel-meta{font-size:10px;color:var(--text3);margin-top:1px;}
+.rom-icon-btn{background:none;border:none;color:transparent;cursor:pointer;font-size:11px;padding:2px 3px;border-radius:4px;transition:color .12s;line-height:1;flex-shrink:0;}
+.rom-novel-row:hover .rom-icon-btn,.rom-coll-hdr:hover .rom-icon-btn{color:var(--text3);}
+.rom-icon-btn:hover{color:var(--red)!important;}
+.rom-icon-btn.edit:hover{color:var(--accent)!important;}
+.rom-sidebar-footer{padding:7px 10px;border-top:1px solid var(--border);display:flex;gap:5px;flex-shrink:0;}
+.rom-add-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:none;border:1px dashed var(--border2);color:var(--text3);border-radius:6px;padding:5px 7px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.rom-add-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* Chapter list */
+#rom-chaplist{width:190px;min-width:190px;background:var(--surface2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;height:100%;}
+#rom-chaplist-hdr{padding:11px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.rom-chaplist-title{font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#rom-chap-items{flex:1;overflow-y:auto;padding:4px 0;}
+#rom-chap-items::-webkit-scrollbar{width:3px;}
+#rom-chap-items::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+.rom-chap-item{display:flex;align-items:center;gap:6px;padding:7px 11px;cursor:pointer;font-size:12px;color:var(--text2);transition:background .12s,color .12s;}
+.rom-chap-item:hover,.rom-chap-item.active{background:var(--border);color:var(--text);}
+.rom-chap-num{font-size:10px;color:var(--text3);flex-shrink:0;min-width:18px;}
+.rom-chap-name-el{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rom-chaplist-footer{padding:6px 9px;border-top:1px solid var(--border);flex-shrink:0;}
+/* Main editor */
+#rom-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;height:100%;}
+#rom-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;gap:10px;min-height:54px;}
+#rom-topbar-left{flex:1;min-width:0;}
+.rom-tb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
+.rom-tb-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#rom-topbar-right{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+#rom-save-ind{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;}
+#rom-save-ind.visible{opacity:1;}
+.rom-tb-action{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 11px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.rom-tb-action:hover{border-color:var(--accent);color:var(--accent);}
+/* Editor area */
+#rom-editor-wrap{flex:1;overflow-y:auto;padding:20px 28px 28px;display:flex;flex-direction:column;gap:12px;}
+#rom-editor-wrap::-webkit-scrollbar{width:5px;}
+#rom-editor-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+/* Cover page */
+#rom-cover-sec{display:none;flex-direction:column;gap:14px;max-width:680px;}
+#rom-cover-sec.visible{display:flex;}
+.rom-cover-card{display:flex;gap:18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.rom-cover-img-wrap{flex-shrink:0;}
+.rom-cover-img{width:100px;height:140px;border-radius:6px;object-fit:cover;border:1px solid var(--border2);cursor:pointer;}
+.rom-cover-ph{width:100px;height:140px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;transition:opacity .15s;}
+.rom-cover-ph:hover{opacity:.85;}
+.rom-cover-details{flex:1;display:flex;flex-direction:column;gap:8px;}
+.rom-cover-novel-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--text);}
+.rom-cover-coll-name{font-size:11px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;}
+.rom-cover-stats{display:flex;gap:14px;font-size:11px;color:var(--text3);}
+.rom-synopsis-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;resize:none;line-height:1.6;min-height:70px;}
+.rom-synopsis-input:focus{border-color:var(--accent);}
+/* Writing area */
+#rom-chap-sec{display:none;flex-direction:column;gap:10px;flex:1;}
+#rom-chap-sec.visible{display:flex;}
+.rom-stats-bar{display:flex;align-items:center;gap:14px;padding:7px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-shrink:0;}
+.rom-stats-bar span{font-size:11px;color:var(--text3);}
+.rom-stats-bar b{color:var(--text2);}
+#rom-writer{width:100%;flex:1;min-height:600px;background:var(--surface);border:2px solid var(--border2);border-radius:0 0 10px 10px;color:var(--text);font-family:'Playfair Display',serif;font-size:16px;line-height:2.1;padding:36px 42px;outline:none;transition:border-color .2s;box-shadow:inset 0 2px 10px rgba(0,0,0,.1);overflow-y:auto;cursor:text;}
+#rom-writer:focus{border-color:var(--accent);box-shadow:inset 0 2px 10px rgba(0,0,0,.1),0 0 0 3px rgba(240,180,41,.08);}
+#rom-writer:empty::before{content:attr(data-placeholder);color:var(--text3);font-style:italic;pointer-events:none;}
+#rom-writer p{margin:4px 0;text-indent:1.5em;}
+#rom-writer img{max-width:100%;border-radius:8px;display:block;margin:16px auto;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
+#rom-writer img:hover{border-color:var(--accent);}
+#rom-writer img.selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(240,180,41,.2);}
+/* Writer toolbar */
+#rom-writer-tb{display:flex;align-items:center;gap:2px;padding:5px 8px;background:var(--surface);border:2px solid var(--border2);border-bottom:none;border-radius:10px 10px 0 0;flex-wrap:wrap;flex-shrink:0;}
+.rom-wtb-btn{background:none;border:none;color:var(--text2);cursor:pointer;border-radius:4px;padding:3px 7px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:600;transition:background .12s,color .12s;line-height:1;}
+.rom-wtb-btn:hover{background:var(--surface2);color:var(--text);}
+.rom-wtb-btn.active{background:var(--accent);color:#0D0D12;}
+.rom-wtb-sep{width:1px;height:14px;background:var(--border2);margin:0 3px;flex-shrink:0;}
+.rom-wtb-img-btn{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;}
+.rom-wtb-img-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* Image resize handles */
+.rom-img-wrap{display:block;text-align:center;margin:16px 0;position:relative;}
+.rom-img-caption{display:block;text-align:center;font-size:12px;color:var(--text3);font-style:italic;margin-top:6px;outline:none;}
+.rom-img-caption:empty::before{content:'Légende (optionnelle)…';color:var(--text3);}
+body.rom-focus #rom-writer{min-height:calc(100vh - 200px);max-width:740px;margin:0 auto;border-color:transparent;box-shadow:none;background:transparent;font-size:17px;border-radius:0;}
+body.rom-focus #rom-writer:focus{border-color:transparent;box-shadow:none;}
+body.rom-focus #rom-writer-tb{max-width:740px;margin:0 auto;border-color:transparent;background:var(--surface2);border-radius:8px;}
+body.rom-focus #rom-editor-wrap{padding:28px 60px;}
+body.rom-focus #rom-stats-bar-wrap{max-width:740px;margin:0 auto;}
+.rom-focus-btn{background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;}
+.rom-focus-btn:hover{border-color:var(--accent);color:var(--accent);}
+.rom-focus-btn.active{background:var(--accent);border-color:var(--accent);color:#0D0D12;}
+/* Empty state */
+.rom-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);}
+.rom-empty-icon{font-size:52px;}
+.rom-empty-text{font-size:15px;font-style:italic;font-family:'Playfair Display',serif;}
+/* Inline inputs */
+.rom-inline-row{display:flex;align-items:center;gap:4px;padding:4px 10px;}
+.rom-inline-inp{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:4px 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;min-width:0;}
+.rom-inline-inp:focus{border-color:var(--accent);}
+/* Focus mode */
+body.rom-focus #rom-overlay{display:none!important;}
+body.rom-focus #rom-modal{background:var(--bg);}
+body.rom-focus #rom-sidebar,body.rom-focus #rom-chaplist{display:none;}
+.rom-focus-btn{background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;}
+.rom-focus-btn:hover{border-color:var(--accent);color:var(--accent);}
+.rom-focus-btn.active{background:var(--accent);border-color:var(--accent);color:#0D0D12;}
+
+/* PDF export modal */
+#rom-pdf-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+#rom-pdf-overlay.open{display:flex;}
+#rom-pdf-modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:360px;max-width:92vw;padding:24px 26px;}
+.rom-pdf-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--accent);margin-bottom:16px;}
+.rom-pdf-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s;margin-bottom:8px;}
+.rom-pdf-row:hover{border-color:var(--accent);}
+.rom-pdf-icon{font-size:22px;}
+.rom-pdf-label{font-size:13px;font-weight:600;}
+.rom-pdf-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* ===== CONTENT SEARCH BAR ===== */
+#content-search-bar{display:none;align-items:center;gap:7px;padding:7px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+#content-search-bar.visible{display:flex;}
+#cs-input{flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:7px;padding:5px 10px 5px 32px;font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;max-width:340px;}
+#cs-input:focus{border-color:var(--accent);}
+#cs-input::placeholder{color:var(--text3);}
+.cs-icon{position:relative;flex-shrink:0;margin-right:-28px;font-size:12px;opacity:.45;pointer-events:none;z-index:1;}
+#cs-count{font-size:11px;color:var(--text3);min-width:64px;white-space:nowrap;}
+.cs-nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:12px;transition:all .12s;}
+.cs-nav-btn:hover{background:var(--border2);color:var(--text);}
+.cs-nav-btn:disabled{opacity:.3;cursor:default;}
+.cs-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;margin-left:2px;transition:color .12s;}
+.cs-close:hover{color:var(--red);}
+.hl-current{background:var(--accent);color:#0D0D12;border-radius:2px;}
+.hl{background:rgba(240,180,41,.35);border-radius:2px;}
+
+/* ===== TOAST ===== */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:8px 16px;border-radius:9px;font-size:12.5px;font-family:'DM Sans',sans-serif;z-index:300;opacity:0;transition:all .28s;box-shadow:0 8px 24px rgba(0,0,0,.3);white-space:nowrap;pointer-events:none;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="mob-overlay" onclick="closeMobSidebar()"></div>
+<button id="sidebar-toggle" onclick="toggleSidebar()" title="Masquer/Afficher (Alt+S)">☰</button>
+
+<!-- ===== SIDEBAR ===== -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+      <div class="sidebar-logo">ENA<span>TSS</span></div>
+      <button class="topbar-icon-btn" id="theme-toggle" onclick="toggleTheme()" title="Thème (Alt+T)">🌙</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Rechercher dans tes notes..." oninput="handleSearch(this.value)" title="Recherche (Alt+F)">
+  </div>
+  <div id="subject-list"></div>
+  <div class="sidebar-footer">
+    <button class="footer-btn" onclick="openDashboard()" title="Tableau de bord (Alt+D)">📊 Stats</button>
+    <button class="footer-btn" onclick="openRomans()" title="Romans (Alt+R)">📖 Romans</button>
+    <button class="footer-btn" onclick="openIbadah()" title="Suivi ibadah" id="ib-footer-btn">☪ Ibadah</button>
+    <button class="footer-btn trash-btn" id="trash-footer-btn" onclick="openTrash()">🗑</button>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div id="main">
+  <div id="dashboard" style="display:none"></div>
+
+  <div id="placeholder">
+    <div class="ph-icon">📚</div>
+    <div class="ph-text">Sélectionne une matière et un chapitre</div>
+  </div>
+
+  <div id="topbar" style="display:none">
+    <div id="topbar-left">
+      <div class="subject-label" id="tb-subject"></div>
+      <div class="chapter-title" id="tb-chapter"></div>
+    </div>
+    <div class="topbar-right">
+      <span id="save-indicator">✓ Enregistré</span>
+      <div class="font-ctrl" title="Taille de police">
+        <button onclick="changeFontSize(-1)">A−</button>
+        <span id="fs-label">14</span>
+        <button onclick="changeFontSize(1)">A+</button>
+      </div>
+      <button class="topbar-icon-btn" onclick="toggleContentSearch()" title="Rechercher dans les notes (Ctrl+F)">🔍</button>
+      <button class="topbar-icon-btn" onclick="exportPDF()" title="Exporter en PDF">📄</button>
+      <button id="ex-open-btn" onclick="openExModal()" title="Exercices IA (Alt+E)" style="display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#0D0D12;border-radius:7px;padding:6px 13px;cursor:pointer;font-weight:700;font-size:12px;font-family:'DM Sans',sans-serif;transition:opacity .15s;">⚡ Exercices</button>
+    </div>
+  </div>
+
+  <!-- CONTENT SEARCH BAR -->
+  <div id="content-search-bar">
+    <span class="cs-icon">🔍</span>
+    <input type="text" id="cs-input" placeholder="Rechercher dans les notes…" oninput="csSearch()" onkeydown="csKey(event)">
+    <span id="cs-count"></span>
+    <button class="cs-nav-btn" id="cs-prev" onclick="csNav(-1)" disabled title="Résultat précédent">↑</button>
+    <button class="cs-nav-btn" id="cs-next" onclick="csNav(1)" disabled title="Résultat suivant">↓</button>
+    <button class="cs-close" onclick="closeContentSearch()" title="Fermer (Échap)">×</button>
+  </div>
+
+  <div id="content" style="display:none">
+    <!-- Notes tab -->
+    <div id="notes-panel" class="tab-panel active">
+      <div id="editor-toolbar">
+        <select class="tb-select" onchange="applyFormat('formatBlock',this.value);this.value='p'" title="Style">
+          <option value="p">Paragraphe</option>
+          <option value="h1">Titre 1</option>
+          <option value="h2">Titre 2</option>
+          <option value="h3">Titre 3</option>
+        </select>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" id="tb-bold" onclick="applyFormat('bold')" title="Gras Ctrl+B"><b>G</b></button>
+        <button class="tb-btn" id="tb-italic" onclick="applyFormat('italic')" title="Italique Ctrl+I"><i>I</i></button>
+        <button class="tb-btn" id="tb-underline" onclick="applyFormat('underline')" title="Souligné Ctrl+U"><u>S</u></button>
+        <button class="tb-btn" id="tb-strike" onclick="applyFormat('strikeThrough')" title="Barré"><s>B</s></button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="applyColor()" title="Couleur texte">🎨</button>
+        <input type="color" id="color-pick" value="#F0B429" style="display:none;width:0;height:0;border:none;padding:0;" oninput="applyFormat('foreColor',this.value)">
+        <div class="tb-sep"></div>
+        <button class="tb-btn" id="tb-ul" onclick="applyFormat('insertUnorderedList')" title="Liste">•≡</button>
+        <button class="tb-btn" id="tb-ol" onclick="applyFormat('insertOrderedList')" title="Numérotée">1≡</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="applyFormat('justifyLeft')" title="Gauche">⇤</button>
+        <button class="tb-btn" onclick="applyFormat('justifyCenter')" title="Centré">⇔</button>
+        <button class="tb-btn" onclick="applyFormat('justifyRight')" title="Droite">⇥</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="applyFormat('formatBlock','blockquote')" title="Citation">❝</button>
+        <button class="tb-btn" onclick="applyFormat('removeFormat')" title="Effacer format" style="font-size:10px">✕fmt</button>
+        <div class="tb-sep"></div>
+        <!-- Templates -->
+        <div style="position:relative">
+          <button class="tb-btn" onclick="toggleTemplates()" title="Modèles de notes">📋</button>
+          <div id="template-picker">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:2px 4px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">Modèles</div>
+            <div class="tpl-item" onclick="applyTemplate('cours')">
+              <div class="tpl-icon">🎓</div>
+              <div><div class="tpl-name">Cours magistral</div><div class="tpl-desc">Structure de prise de notes</div></div>
+            </div>
+            <div class="tpl-item" onclick="applyTemplate('fiche')">
+              <div class="tpl-icon">📌</div>
+              <div><div class="tpl-name">Fiche de révision</div><div class="tpl-desc">Concepts clés & définitions</div></div>
+            </div>
+            <div class="tpl-item" onclick="applyTemplate('td')">
+              <div class="tpl-icon">✏️</div>
+              <div><div class="tpl-name">TD / Exercices</div><div class="tpl-desc">Problème + démarche + solution</div></div>
+            </div>
+            <div class="tpl-item" onclick="applyTemplate('mindmap')">
+              <div class="tpl-icon">🧠</div>
+              <div><div class="tpl-name">Mind map texte</div><div class="tpl-desc">Organisation hiérarchique</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Shortcuts -->
+        <div style="position:relative">
+          <button class="tb-btn" onclick="toggleShortcuts()" title="Raccourcis clavier">⌨</button>
+          <div id="shortcuts-panel">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Raccourcis</div>
+            <div class="sc-row"><span>Gras</span><span class="sc-key">Ctrl+B</span></div>
+            <div class="sc-row"><span>Italique</span><span class="sc-key">Ctrl+I</span></div>
+            <div class="sc-row"><span>Souligné</span><span class="sc-key">Ctrl+U</span></div>
+            <div class="sc-row"><span>Titre 1</span><span class="sc-key">Ctrl+1</span></div>
+            <div class="sc-row"><span>Titre 2</span><span class="sc-key">Ctrl+2</span></div>
+            <div class="sc-row"><span>Titre 3</span><span class="sc-key">Ctrl+3</span></div>
+            <div class="sc-row"><span>Paragraphe</span><span class="sc-key">Ctrl+0</span></div>
+            <div style="height:6px;"></div>
+            <div class="sc-row"><span>Sidebar</span><span class="sc-key">Alt+S</span></div>
+            <div class="sc-row"><span>Recherche notes</span><span class="sc-key">Ctrl+F</span></div>
+            <div class="sc-row"><span>Recherche sidebar</span><span class="sc-key">Alt+F</span></div>
+            <div class="sc-row"><span>Dashboard</span><span class="sc-key">Alt+D</span></div>
+            <div class="sc-row"><span>Onglet Notes</span><span class="sc-key">Alt+N</span></div>
+            <div class="sc-row"><span>Onglet Exercices</span><span class="sc-key">Alt+E</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="notes-editor" contenteditable="true" data-placeholder="Écris tes notes ici… ou choisis un modèle 📋"
+        oninput="onEditorInput()" onkeydown="handleEditorKey(event)"
+        onmouseup="updateTbState()" onkeyup="updateTbState()" tabindex="0">
+      </div>
+
+      <div class="docs-section">
+        <div class="docs-title">Documents de cours</div>
+        <div id="docs-list"><span class="no-docs">Aucun document ajouté</span></div>
+        <button class="upload-btn" onclick="document.getElementById('file-inp').click()">⬆ Ajouter un document (PDF, TXT, MD…)</button>
+        <input type="file" id="file-inp" accept=".pdf,.txt,.md,.csv,.json,.html" style="display:none" onchange="handleFileUpload(this)">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ROMANS MODAL -->
+<div id="rom-overlay" onclick="closeRomans()"></div>
+<div id="rom-modal">
+
+  <!-- Sidebar : Collections + Romans -->
+  <div id="rom-sidebar">
+    <div id="rom-sidebar-hdr">
+      <div class="rom-sidebar-title">📖 Romans</div>
+      <button onclick="closeRomans()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:2px 5px;">×</button>
+    </div>
+    <div id="rom-list"></div>
+    <div class="rom-sidebar-footer">
+      <button class="rom-add-btn" onclick="romShowAddColl()">＋ Collection</button>
+      <button class="rom-add-btn" id="rom-add-novel-btn" onclick="romShowAddNovel()" style="display:none">＋ Roman</button>
+    </div>
+  </div>
+
+  <!-- Liste des chapitres -->
+  <div id="rom-chaplist">
+    <div id="rom-chaplist-hdr">
+      <div class="rom-chaplist-title" id="rom-chaplist-name">—</div>
+    </div>
+    <div id="rom-chap-items"></div>
+    <div class="rom-chaplist-footer">
+      <button class="rom-add-btn" id="rom-add-chap-btn" onclick="romAddChap()" style="width:100%;display:none">＋ Chapitre</button>
+    </div>
+  </div>
+
+  <!-- Zone d'écriture principale -->
+  <div id="rom-main">
+
+    <!-- État vide -->
+    <div class="rom-empty" id="rom-empty">
+      <div class="rom-empty-icon">✍️</div>
+      <div class="rom-empty-text">Sélectionne ou crée un roman</div>
+    </div>
+
+    <!-- Topbar éditeur -->
+    <div id="rom-topbar" style="display:none">
+      <div id="rom-topbar-left">
+        <div class="rom-tb-label" id="rom-tb-coll"></div>
+        <div class="rom-tb-title" id="rom-tb-title">Couverture</div>
+      </div>
+      <div id="rom-topbar-right">
+        <span id="rom-save-ind">✓ Enregistré</span>
+        <button class="rom-focus-btn" id="rom-focus-btn" onclick="romToggleFocus()" title="Mode focus (F11)">🖊 Focus</button>
+        <button class="rom-tb-action" onclick="romOpenPdfModal()" title="Exporter PDF">📄 PDF</button>
+        <button class="rom-tb-action" onclick="closeRomans()">× Fermer</button>
+      </div>
+    </div>
+
+    <!-- Zone scrollable -->
+    <div id="rom-editor-wrap" style="display:none">
+
+      <!-- Page de couverture -->
+      <div id="rom-cover-sec">
+        <div class="rom-cover-card">
+          <div class="rom-cover-img-wrap">
+            <div class="rom-cover-ph" id="rom-cover-ph" onclick="document.getElementById('rom-cover-file').click()" title="Changer la couverture">📖</div>
+            <img id="rom-cover-img" class="rom-cover-img" src="" style="display:none" onclick="document.getElementById('rom-cover-file').click()" title="Changer la couverture" alt="Couverture">
+            <input type="file" id="rom-cover-file" accept="image/*" style="display:none" onchange="romLoadCover(this)">
+          </div>
+          <div class="rom-cover-details">
+            <div class="rom-cover-novel-title" id="rom-cover-title"></div>
+            <div class="rom-cover-coll-name" id="rom-cover-coll"></div>
+            <div class="rom-cover-stats" id="rom-cover-stats"></div>
+            <textarea class="rom-synopsis-input" id="rom-synopsis" placeholder="Synopsis — résumé du roman…" maxlength="500" oninput="romSaveSynopsis()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone d'écriture chapitre -->
+      <div id="rom-chap-sec">
+        <div class="rom-stats-bar" id="rom-stats-bar-wrap">
+          <span>📝 <b id="rom-wc-chap">0</b> mots</span>
+          <span style="width:1px;height:12px;background:var(--border2)"></span>
+          <span>📚 <b id="rom-wc-total">0</b> mots au total</span>
+          <span style="width:1px;height:12px;background:var(--border2)"></span>
+          <span>⏱ ~<b id="rom-read-time">0</b> min de lecture</span>
+          <span style="width:1px;height:12px;background:var(--border2)"></span>
+          <span>🔤 <b id="rom-char-count">0</b> caractères</span>
+        </div>
+
+        <!-- Mini toolbar -->
+        <div id="rom-writer-tb">
+          <button class="rom-wtb-btn" id="rwtb-bold" onclick="romFmt('bold')" title="Gras"><b>G</b></button>
+          <button class="rom-wtb-btn" id="rwtb-italic" onclick="romFmt('italic')" title="Italique"><i>I</i></button>
+          <button class="rom-wtb-btn" id="rwtb-underline" onclick="romFmt('underline')" title="Souligné"><u>S</u></button>
+          <div class="rom-wtb-sep"></div>
+          <button class="rom-wtb-btn" onclick="romFmt('formatBlock','h2')" title="Titre de section">T1</button>
+          <button class="rom-wtb-btn" onclick="romFmt('formatBlock','h3')" title="Sous-titre">T2</button>
+          <button class="rom-wtb-btn" onclick="romFmt('formatBlock','p')" title="Paragraphe normal">¶</button>
+          <div class="rom-wtb-sep"></div>
+          <button class="rom-wtb-btn" onclick="romFmt('justifyLeft')" title="Gauche">⇤</button>
+          <button class="rom-wtb-btn" onclick="romFmt('justifyCenter')" title="Centré">⇔</button>
+          <button class="rom-wtb-btn" onclick="romFmt('justifyRight')" title="Droite">⇥</button>
+          <div class="rom-wtb-sep"></div>
+          <button class="rom-wtb-img-btn" onclick="document.getElementById('rom-img-file').click()" title="Insérer une image dans le texte">🖼 Insérer image</button>
+          <input type="file" id="rom-img-file" accept="image/*" style="display:none" onchange="romInsertImg(this)">
+          <div class="rom-wtb-sep"></div>
+          <button class="rom-wtb-btn" onclick="romFmt('removeFormat')" title="Effacer format" style="font-size:10px">✕fmt</button>
+        </div>
+
+        <!-- Contenteditable editor -->
+        <div id="rom-writer"
+          contenteditable="true"
+          data-placeholder="Commence à écrire ton chapitre ici… Insère des images avec le bouton 🖼 ci-dessus."
+          oninput="romSaveChap()"
+          onkeydown="romHandleKey(event)"
+          onmouseup="romUpdateTb()"
+          onkeyup="romUpdateTb()"
+          spellcheck="true"
+          lang="fr"
+          tabindex="0"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px;">
+          <span style="font-size:11px;color:var(--text3);font-style:italic;">Astuce : Tab indente · F11 mode focus · Clic sur image pour la sélectionner</span>
+          <span style="font-size:11px;color:var(--text3)" id="rom-autosave-label"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ROMANS PDF MODAL -->
+<div id="rom-pdf-overlay">
+  <div id="rom-pdf-modal">
+    <div class="rom-pdf-title">📄 Exporter en PDF</div>
+    <div id="rom-pdf-opts"></div>
+    <button onclick="document.getElementById('rom-pdf-overlay').classList.remove('open')" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;width:100%;margin-top:4px;">Annuler</button>
+  </div>
+</div>
+
+<!-- IBADAH MODAL -->
+<div id="ib-overlay" onclick="closeIbadah()"></div>
+<div id="ib-modal">
+  <div class="ib-hdr">
+    <div class="ib-hdr-left">
+      <div class="ib-title">☪ Suivi Ibadah</div>
+      <div class="ib-date" id="ib-date"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="ib-reset-btn" onclick="resetIbadah()">Remettre à zéro</button>
+      <button onclick="closeIbadah()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;">×</button>
+    </div>
+  </div>
+  <div class="ib-body" id="ib-body"></div>
+</div>
+
+<!-- DOC VIEWER MODAL -->
+<div id="doc-overlay" onclick="closeDocViewer()"></div>
+<div id="doc-modal">
+  <div class="doc-modal-hdr">
+    <span style="font-size:20px;" id="doc-modal-icon">📄</span>
+    <span class="doc-modal-name" id="doc-modal-name">Document</span>
+    <span class="doc-modal-type" id="doc-modal-type">PDF</span>
+    <button onclick="closeDocViewer()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;flex-shrink:0;margin-left:4px;">×</button>
+  </div>
+  <iframe id="doc-viewer-frame" title="Visionneuse document"></iframe>
+  <div id="doc-viewer-text"></div>
+</div>
+
+<!-- EXERCISE MODAL -->
+<div id="ex-overlay" onclick="closeExModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;backdrop-filter:blur(3px);"></div>
+<div id="ex-modal" style="display:none;position:fixed;top:0;right:0;height:100vh;width:480px;max-width:95vw;background:var(--surface);border-left:1px solid var(--border2);z-index:151;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.4);transition:transform .25s ease;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;">⚡ Exercices IA</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="ex-modal-subtitle">Génère des exercices depuis tes notes</div>
+    </div>
+    <button onclick="closeExModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;">×</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <select id="exercise-type" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;">
+      <option value="QCM">QCM (5 questions)</option>
+      <option value="open">Questions ouvertes</option>
+      <option value="flashcards">Flashcards</option>
+    </select>
+    <button id="gen-btn" onclick="generateExercises()" style="display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#0D0D12;border-radius:7px;padding:8px 15px;cursor:pointer;font-weight:700;font-size:12px;font-family:'DM Sans',sans-serif;transition:opacity .15s,transform .1s;flex-shrink:0;">✦ Générer</button>
+  </div>
+  <div id="ex-content" style="flex:1;overflow-y:auto;padding:16px 18px;">
+    <div class="ex-empty"><div class="ei">⚡</div><div>Génère des exercices depuis tes notes</div></div>
+  </div>
+</div>
+
+<!-- TRASH MODAL -->
+<div id="trash-overlay" onclick="closeTrash()"></div>
+<div id="trash-modal">
+  <div class="trash-hdr">
+    <div><div class="trash-hdr-title">🗑 Corbeille</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">Restaurer les éléments supprimés</div></div>
+    <div style="display:flex;gap:7px;align-items:center;">
+      <button class="danger-btn" id="trash-empty-btn" onclick="emptyTrash()">Vider</button>
+      <button class="close-modal-btn" onclick="closeTrash()">×</button>
+    </div>
+  </div>
+  <div id="trash-list"></div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="ob-overlay">
+  <div id="ob-modal">
+    <div class="ob-step active" id="ob-0">
+      <div class="ob-icon">📚</div>
+      <div class="ob-title">Bienvenue sur StudySpace !</div>
+      <div class="ob-desc">Ton espace de révision intelligent. Organise tes cours par matières et chapitres, prends des notes enrichies, et génère des exercices avec l'IA.</div>
+    </div>
+    <div class="ob-step" id="ob-1">
+      <div class="ob-icon">🗂</div>
+      <div class="ob-title">Organise tes matières</div>
+      <div class="ob-desc">Crée tes matières dans la barre latérale, ajoute des chapitres, et commence à écrire. Un point coloré te montre l'avancement de chaque chapitre : <b style="color:var(--accent)">● Notes</b> · <b style="color:var(--green)">● Exercices faits</b></div>
+    </div>
+    <div class="ob-step" id="ob-2">
+      <div class="ob-icon">⚡</div>
+      <div class="ob-title">L'IA génère tes exercices</div>
+      <div class="ob-desc">Écris tes notes, choisis QCM / Questions ouvertes / Flashcards, et clique sur Générer. Tes scores sont sauvegardés et visibles dans le tableau de bord !</div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-skip" onclick="closeOb()">Passer</button>
+      <div class="ob-dots"><div class="ob-dot active" id="d0"></div><div class="ob-dot" id="d1"></div><div class="ob-dot" id="d2"></div></div>
+      <button class="ob-next" id="ob-next-btn" onclick="obNext()">Suivant →</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// STATE & STORAGE
+// ============================================================
+const SK = 'studyspace-v3';
+const COLORS = ['#F0B429','#3ECF8E','#FF6B6B','#6C63FF','#E8864A','#00BCD4','#E91E8C','#4ECDC4','#A855F7','#06B6D4'];
+function uid(){return Math.random().toString(36).substr(2,9);}
+
+const TEMPLATES = {
+  cours:`<h1>Cours : [Titre du cours]</h1><h2>I. Introduction</h2><p>Contexte et objectifs du cours...</p><h2>II. Développement</h2><h3>A. Premier point</h3><p>Explications, exemples...</p><h3>B. Deuxième point</h3><p>Explications, exemples...</p><h2>III. Points clés à retenir</h2><ul><li>Point clé 1</li><li>Point clé 2</li><li>Point clé 3</li></ul><blockquote>Définition importante à mémoriser</blockquote>`,
+  fiche:`<h1>Fiche de révision : [Sujet]</h1><h2>📌 Définitions essentielles</h2><p><strong>Terme 1</strong> : définition...</p><p><strong>Terme 2</strong> : définition...</p><h2>🔑 Concepts clés</h2><ul><li>Concept 1 : explication</li><li>Concept 2 : explication</li></ul><h2>⚠️ Points à ne pas confondre</h2><p>Distinction 1 vs. Distinction 2...</p><h2>📐 Formules / Méthodes</h2><p>Formule ou méthode importante...</p>`,
+  td:`<h1>TD n° — [Intitulé]</h1><h2>📋 Énoncé</h2><p>Résumé du problème posé...</p><h2>🔍 Analyse</h2><p>Identification des données, hypothèses...</p><h2>✏️ Démarche</h2><ol><li>Étape 1</li><li>Étape 2</li><li>Étape 3</li></ol><h2>✅ Solution</h2><p>Résultat et interprétation...</p><blockquote>Remarque ou piège à éviter</blockquote>`,
+  mindmap:`<h1>🧠 [Sujet central]</h1><h2>Branche 1 — [Thème]</h2><ul><li>Sous-idée A</li><li>Sous-idée B<ul><li>Détail 1</li><li>Détail 2</li></ul></li></ul><h2>Branche 2 — [Thème]</h2><ul><li>Sous-idée A</li><li>Sous-idée B</li></ul><h2>Branche 3 — [Thème]</h2><ul><li>Sous-idée A</li><li>Sous-idée B</li></ul>`
+};
+
+let state = {
+  subjects:[{id:uid(),name:'Économie générale',color:'#F0B429',
+    chapters:[{id:uid(),name:'Science économique',notes:'',docs:[],exercises:null,scores:[]}]}],
+  sel:{subId:null,chId:null},
+  expanded:{},trash:[],exercises:null,loading:false,
+  qAns:{},qSub:false,fcIdx:0,fcFlip:false,
+  fontSize:14,view:'chapter'
+};
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(SK);
+    if(!raw)return;
+    const p=JSON.parse(raw);
+    state.subjects=p.subjects||state.subjects;
+    state.trash=p.trash||[];
+    state.fontSize=p.fontSize||14;
+    state.subjects.forEach(s=>s.chapters.forEach(ch=>{
+      if(!ch.scores)ch.scores=[];
+      if(ch.exercises===undefined)ch.exercises=null;
+      if(!ch.docs)ch.docs=[];
+    }));
+  }catch(e){}
+}
+function saveState(){
+  try{localStorage.setItem(SK,JSON.stringify({subjects:state.subjects,trash:state.trash,fontSize:state.fontSize}));}catch(e){}
+}
+const getSub=id=>state.subjects.find(s=>s.id===id);
+const getCh=(sId,cId)=>{const s=getSub(sId);return s?s.chapters.find(c=>c.id===cId):null;};
+
+// ============================================================
+// RENDER SIDEBAR
+// ============================================================
+function render(){renderSidebar();renderMain();}
+
+function renderSidebar(){
+  const list=document.getElementById('subject-list');
+  const q=(document.getElementById('search-input').value||'').trim().toLowerCase();
+  list.innerHTML='';
+  let any=false;
+
+  state.subjects.forEach(sub=>{
+    const fChs=q?sub.chapters.filter(ch=>ch.name.toLowerCase().includes(q)||(ch.notes||'').replace(/<[^>]+>/g,'').toLowerCase().includes(q)):sub.chapters;
+    if(q&&fChs.length===0&&!sub.name.toLowerCase().includes(q))return;
+    any=true;
+    const isExp=state.expanded[sub.id]||!!q;
+    const wrap=document.createElement('div');
+
+    // Subject header
+    const hdr=document.createElement('div');
+    hdr.className='subject-header'+(isExp?' expanded':'');
+    hdr.setAttribute('tabindex','0');
+    hdr.setAttribute('role','button');
+    hdr.setAttribute('aria-label',`Matière: ${sub.name}`);
+    hdr.innerHTML=`<div class="subject-dot" style="background:${sub.color}"></div>
+      <span class="subject-name" style="color:${sub.color}">${q?hlText(sub.name,q):esc(sub.name)}</span>
+      <span class="chevron">▶</span>
+      <button class="icon-btn edit" tabindex="-1" title="Renommer" onclick="startRenameSub(event,'${sub.id}')">✏️</button>
+      <button class="icon-btn" tabindex="-1" title="Supprimer" onclick="delSub(event,'${sub.id}')">🗑</button>`;
+    hdr.onclick=e=>{if(e.target.closest('.icon-btn'))return;toggleExp(sub.id);};
+    hdr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleExp(sub.id);}};
+    wrap.appendChild(hdr);
+
+    // Rename sub
+    const rDiv=document.createElement('div');rDiv.id='rsub-'+sub.id;rDiv.style.display='none';
+    rDiv.innerHTML=`<div class="inline-input-row"><input class="inline-input" id="rsi-${sub.id}" value="${esc(sub.name)}" maxlength="40"
+      onkeydown="if(event.key==='Enter')okRenameSub('${sub.id}');if(event.key==='Escape')hideRename('rsub-${sub.id}')">
+      <button class="ok-btn" onclick="okRenameSub('${sub.id}')">✓</button>
+      <button class="x-btn" onclick="hideRename('rsub-${sub.id}')">×</button></div>`;
+    wrap.appendChild(rDiv);
+
+    // Chapters
+    const cList=document.createElement('div');
+    cList.className='chapters-list'+(isExp?' open':'');
+    fChs.forEach(ch=>{
+      const st=ch.scores?.length>0?'has-exercises':(ch.notes?'has-notes':'');
+      const row=document.createElement('div');
+      row.className='chapter-row'+(state.sel.chId===ch.id?' active':'');
+      row.setAttribute('tabindex','0');
+      row.setAttribute('role','button');
+      row.setAttribute('aria-label',`Chapitre: ${ch.name}`);
+      row.innerHTML=`<div class="ch-status ${st}" title="${st==='has-exercises'?'Exercices réalisés':st==='has-notes'?'Notes présentes':'Vide'}"></div>
+        <span class="ch-name">${q?hlText(ch.name,q):esc(ch.name)}</span>
+        <button class="icon-btn edit" tabindex="-1" title="Renommer" onclick="startRenameCh(event,'${sub.id}','${ch.id}')">✏️</button>
+        <button class="icon-btn" tabindex="-1" title="Supprimer" onclick="delCh(event,'${sub.id}','${ch.id}')">🗑</button>`;
+      row.onclick=e=>{if(e.target.closest('.icon-btn'))return;selCh(sub.id,ch.id);};
+      row.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();selCh(sub.id,ch.id);}};
+      cList.appendChild(row);
+      const rCh=document.createElement('div');rCh.id='rch-'+ch.id;rCh.style.display='none';
+      rCh.innerHTML=`<div class="inline-input-row ch"><input class="inline-input" id="rci-${ch.id}" value="${esc(ch.name)}" maxlength="60"
+        onkeydown="if(event.key==='Enter')okRenameCh('${sub.id}','${ch.id}');if(event.key==='Escape')hideRename('rch-${ch.id}')">
+        <button class="ok-btn" onclick="okRenameCh('${sub.id}','${ch.id}')">✓</button>
+        <button class="x-btn" onclick="hideRename('rch-${ch.id}')">×</button></div>`;
+      cList.appendChild(rCh);
+    });
+    const addChRow=document.createElement('div');
+    addChRow.id='add-ch-'+sub.id;addChRow.className='add-ch-btn-row';
+    addChRow.innerHTML=`<button class="add-inline-btn" onclick="showAddCh('${sub.id}')">＋ Chapitre</button>`;
+    cList.appendChild(addChRow);
+    wrap.appendChild(cList);
+    list.appendChild(wrap);
+  });
+
+  if(!any&&q){list.innerHTML=`<div style="padding:18px 12px;text-align:center;color:var(--text3);font-size:12px;font-style:italic;">Aucun résultat pour «&nbsp;${esc(q)}&nbsp;»</div>`;}
+
+  const addSubWrap=document.createElement('div');
+  addSubWrap.id='add-sub-area';addSubWrap.className='add-btn-row';
+  addSubWrap.innerHTML=`<button class="add-inline-btn" onclick="showAddSub()">＋ Nouvelle matière</button>`;
+  list.appendChild(addSubWrap);
+
+  // Trash badge
+  const tb=document.getElementById('trash-footer-btn');
+  if(tb){const c=state.trash.length;tb.innerHTML=`🗑 Corbeille${c>0?` <span class="trash-badge">${c}</span>`:''}`;}
+}
+
+// ============================================================
+// RENDER MAIN
+// ============================================================
+function renderMain(){
+  const hasCh=state.sel.subId&&state.sel.chId;
+  const isDash=state.view==='dashboard';
+  document.getElementById('placeholder').style.display=(!hasCh&&!isDash)?'flex':'none';
+  document.getElementById('topbar').style.display=(hasCh&&!isDash)?'flex':'none';
+  document.getElementById('content').style.display=(hasCh&&!isDash)?'flex':'none';
+  document.getElementById('dashboard').style.display=isDash?'block':'none';
+  if(isDash){renderDashboard();return;}
+  if(!hasCh)return;
+
+  const sub=getSub(state.sel.subId);
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  document.getElementById('tb-subject').textContent=sub.name;
+  document.getElementById('tb-subject').style.color=sub.color;
+  document.getElementById('tb-chapter').textContent=ch.name;
+
+  const ed=document.getElementById('notes-editor');
+  ed.style.fontSize=state.fontSize+'px';
+  document.getElementById('fs-label').textContent=state.fontSize;
+  ed.innerHTML=ch.notes||'';
+
+  if(ch.exercises){state.exercises=ch.exercises;state.qAns={};state.qSub=false;state.fcIdx=0;state.fcFlip=false;}
+  else state.exercises=null;
+
+  renderDocs(ch);
+}
+
+function renderDocs(ch){
+  const dl=document.getElementById('docs-list');
+  const docs=ch.docs||[];
+  if(docs.length===0){dl.innerHTML='<span class="no-docs">Aucun document ajouté</span>';return;}
+  dl.innerHTML=docs.map(d=>{
+    const isPdf=d.type==='application/pdf'||d.name.endsWith('.pdf');
+    const icon=isPdf?'📕':'📄';
+    return `<span class="doc-chip">
+      ${icon} <span style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(d.name)}</span>
+      <button class="doc-chip-open" onclick="openDocViewer('${d.id}')" title="Ouvrir">👁</button>
+      <button class="doc-chip-del" onclick="removeDoc('${d.id}')" title="Supprimer">×</button>
+    </span>`;
+  }).join('');
+}
+
+function renderExercises(){
+  const c=document.getElementById('ex-content');
+  if(state.loading){c.innerHTML=`<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Génération en cours…</div></div>`;return;}
+  if(!state.exercises){c.innerHTML=`<div class="ex-empty"><div class="ei">⚡</div><div>Génère des exercices depuis la barre en bas</div></div>`;return;}
+  const ex=state.exercises;
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  const scores=ch?.scores||[];
+  let histHtml='';
+  if(scores.length>0){
+    const best=Math.max(...scores.map(s=>s.pct));
+    histHtml=`<div class="score-history">${scores.slice(-5).map(s=>`<span class="score-pill${s.pct===best?' best':''}">${s.pct}% <span style="font-size:10px;opacity:.6">${s.date}</span></span>`).join('')}</div>`;
+  }
+  if(ex.type==='QCM'){
+    let h=`<div class="ex-label">QCM — ${ex.questions.length} questions</div>${histHtml}`;
+    ex.questions.forEach((q,qi)=>{
+      h+=`<div class="q-card"><div class="q-text">${qi+1}. ${esc(q.q)}</div>`;
+      q.options.forEach(opt=>{
+        const l=opt[0],isSel=state.qAns[qi]===l;
+        const isCor=state.qSub&&l===q.answer,isWr=state.qSub&&isSel&&l!==q.answer;
+        h+=`<button class="opt-btn${isCor?' correct':isWr?' wrong':isSel?' sel':''}" ${state.qSub?'disabled':''} onclick="selQcm(${qi},'${l}')">${esc(opt)}</button>`;
+      });
+      h+=`</div>`;
+    });
+    if(!state.qSub)h+=`<button class="check-btn" onclick="submitQcm()">Vérifier mes réponses</button>`;
+    else{const sc=ex.questions.filter((q,i)=>state.qAns[i]===q.answer).length;h+=`<div class="score-display">🎯 Score : ${sc} / ${ex.questions.length}</div>`;}
+    c.innerHTML=h;
+  } else if(ex.type==='open'){
+    let h=`<div class="ex-label">Questions ouvertes</div>${histHtml}`;
+    ex.questions.forEach((q,qi)=>{h+=`<div class="open-card"><div class="q-text">${qi+1}. ${esc(q.q)}</div><details><summary>Voir la réponse modèle</summary><div class="ans-box">${esc(q.answer)}</div></details></div>`;});
+    c.innerHTML=h;
+  } else if(ex.type==='flashcards'){
+    const cards=ex.cards,i=state.fcIdx;
+    c.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;padding-top:10px;">
+      <div class="fc-counter">Flashcard ${i+1} / ${cards.length}</div>
+      <div class="fc-wrap" onclick="flipCard()"><div class="fc-inner${state.fcFlip?' flipped':''}">
+        <div class="fc-face fc-front"><div class="fc-text">${esc(cards[i].front)}</div></div>
+        <div class="fc-face fc-back"><div class="fc-text">${esc(cards[i].back)}</div></div>
+      </div></div>
+      <div class="fc-hint">Clique pour retourner</div>
+      <div class="fc-nav">
+        <button class="fc-nav-btn" onclick="fcPrev()" ${i===0?'disabled':''}>← Préc.</button>
+        <button class="fc-nav-btn" onclick="fcNext()" ${i>=cards.length-1?'disabled':''}>Suiv. →</button>
+      </div>
+    </div>`;
+  }
+}
+
+function renderDashboard(){
+  const dash=document.getElementById('dashboard');
+  let tot=0,wNotes=0,wEx=0,allSc=[];const rec=[];
+  state.subjects.forEach(s=>s.chapters.forEach(ch=>{
+    tot++;if(ch.notes)wNotes++;
+    if(ch.scores?.length>0){wEx++;allSc.push(...ch.scores);rec.push({s,ch,last:ch.scores[ch.scores.length-1]});}
+  }));
+  const avg=allSc.length>0?Math.round(allSc.reduce((a,s)=>a+s.pct,0)/allSc.length):0;
+  rec.sort((a,b)=>b.last.ts-a.last.ts);
+  const recHtml=rec.slice(0,5).map(({s,ch,last})=>`
+    <div class="recent-row" onclick="selCh('${s.id}','${ch.id}')" tabindex="0" role="button" onkeydown="if(event.key==='Enter')selCh('${s.id}','${ch.id}')">
+      <div class="recent-dot" style="background:${s.color}"></div>
+      <div class="recent-info"><div class="recent-name">${esc(ch.name)}</div><div class="recent-sub">${esc(s.name)}</div></div>
+      <div class="recent-score">${last.pct}%</div>
+    </div>`).join('')||`<div style="color:var(--text3);font-size:12.5px;font-style:italic;padding:12px 0">Aucun exercice réalisé pour l'instant</div>`;
+  const progHtml=state.subjects.map(s=>{
+    const tot2=s.chapters.length;if(!tot2)return'';
+    const done=s.chapters.filter(ch=>ch.scores?.length>0).length;
+    const pct=Math.round(done/tot2*100);
+    return `<div style="margin-bottom:11px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:12px;font-weight:600;color:${s.color}">${esc(s.name)}</span>
+        <span style="font-size:10.5px;color:var(--text3)">${done}/${tot2}</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%;background:${s.color}"></div></div>
+    </div>`;
+  }).join('');
+  dash.innerHTML=`
+    <div class="dash-title">Tableau de bord</div>
+    <div class="dash-subtitle">Vue d'ensemble de tes révisions</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">${state.subjects.length}</div><div class="stat-label">Matières</div></div>
+      <div class="stat-card"><div class="stat-val">${tot}</div><div class="stat-label">Chapitres</div></div>
+      <div class="stat-card"><div class="stat-val">${wNotes}</div><div class="stat-label">Avec notes</div></div>
+      <div class="stat-card"><div class="stat-val">${avg>0?avg+'%':'—'}</div><div class="stat-label">Score moyen</div></div>
+    </div>
+    <div class="dash-sec">Progression par matière</div>
+    <div style="margin-bottom:22px">${progHtml||'<div style="color:var(--text3);font-size:12px;font-style:italic">Aucune matière créée</div>'}</div>
+    <div class="dash-sec">Derniers chapitres révisés</div>
+    <div class="recent-list">${recHtml}</div>
+    <button onclick="closeDashboard()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:7px;padding:8px 16px;cursor:pointer;font-size:12.5px;font-family:'DM Sans',sans-serif;margin-top:8px;" tabindex="0">← Retour aux cours</button>`;
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function toggleExp(sId){state.expanded[sId]=!state.expanded[sId];render();}
+
+function selCh(sId,chId){
+  state.sel={subId:sId,chId};
+  state.expanded[sId]=true;
+  state.view='chapter';
+  state.qAns={};state.qSub=false;state.fcIdx=0;state.fcFlip=false;
+  // Reset content search when switching chapters
+  if(cs.active)closeContentSearch();
+  render();
+  if(window.innerWidth<=680)closeMobSidebar();
+}
+
+function openExModal(){
+  document.getElementById('ex-overlay').style.display='block';
+  document.getElementById('ex-modal').style.display='flex';
+  // Update subtitle with chapter name
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  if(ch){document.getElementById('ex-modal-subtitle').textContent=ch.name;}
+  renderExercises();
+}
+function closeExModal(){
+  document.getElementById('ex-overlay').style.display='none';
+  document.getElementById('ex-modal').style.display='none';
+}
+
+let saveTimer;
+function onEditorInput(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const ed=document.getElementById('notes-editor');
+    const ch=getCh(state.sel.subId,state.sel.chId);
+    if(ch&&ed){ch.notes=ed.innerHTML;saveState();showSaveInd();renderSidebar();}
+  },400);
+}
+
+function showSaveInd(){
+  const el=document.getElementById('save-indicator');
+  if(!el)return;el.classList.add('visible');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('visible'),2200);
+}
+
+function applyFormat(cmd,val){document.execCommand(cmd,false,val||null);document.getElementById('notes-editor').focus();updateTbState();}
+function applyColor(){document.getElementById('color-pick').click();}
+function updateTbState(){
+  [['tb-bold','bold'],['tb-italic','italic'],['tb-underline','underline'],['tb-strike','strikeThrough'],['tb-ul','insertUnorderedList'],['tb-ol','insertOrderedList']].forEach(([id,cmd])=>{
+    const b=document.getElementById(id);if(b)b.classList.toggle('active',document.queryCommandState(cmd));
+  });
+}
+
+function handleEditorKey(e){
+  if(e.ctrlKey||e.metaKey){
+    if(e.key==='f'||e.key==='F'){e.preventDefault();toggleContentSearch();return;}
+    const m={'b':'bold','i':'italic','u':'underline','0':'p','1':'h1','2':'h2','3':'h3'};
+    if(m[e.key]){e.preventDefault();const v=m[e.key];v.startsWith('h')||v==='p'?applyFormat('formatBlock',v):applyFormat(v);}
+  }
+}
+
+function toggleTemplates(){
+  document.getElementById('shortcuts-panel').classList.remove('open');
+  document.getElementById('template-picker').classList.toggle('open');
+}
+function toggleShortcuts(){
+  document.getElementById('template-picker').classList.remove('open');
+  document.getElementById('shortcuts-panel').classList.toggle('open');
+}
+function applyTemplate(tpl){
+  document.getElementById('template-picker').classList.remove('open');
+  const ed=document.getElementById('notes-editor');
+  if(!ed)return;
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  if(ch&&ch.notes){if(!confirm('Remplacer les notes existantes par ce modèle ?'))return;}
+  ed.innerHTML=TEMPLATES[tpl]||'';
+  if(ch){ch.notes=ed.innerHTML;saveState();showSaveInd();renderSidebar();}
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#template-picker')&&!e.target.closest('.tb-btn[onclick*="toggleTemplates"]'))
+    document.getElementById('template-picker')?.classList.remove('open');
+  if(!e.target.closest('#shortcuts-panel')&&!e.target.closest('.tb-btn[onclick*="toggleShortcuts"]'))
+    document.getElementById('shortcuts-panel')?.classList.remove('open');
+});
+
+function changeFontSize(d){
+  state.fontSize=Math.min(22,Math.max(11,state.fontSize+d));
+  document.getElementById('notes-editor').style.fontSize=state.fontSize+'px';
+  document.getElementById('fs-label').textContent=state.fontSize;
+  saveState();
+}
+
+function handleFileUpload(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const doc={id:uid(),name:file.name,type:file.type||'text/plain',content:ev.target.result};
+    const ch=getCh(state.sel.subId,state.sel.chId);
+    if(ch){ch.docs.push(doc);saveState();renderDocs(ch);showToast(`📄 ${file.name} ajouté`);}
+  };
+  const isPdf=file.type==='application/pdf'||file.name.endsWith('.pdf');
+  isPdf?reader.readAsDataURL(file):reader.readAsText(file,'UTF-8');
+  inp.value='';
+}
+function removeDoc(dId){
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  if(ch){ch.docs=ch.docs.filter(d=>d.id!==dId);saveState();renderDocs(ch);}
+}
+
+function openDocViewer(dId){
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  if(!ch)return;
+  const doc=ch.docs.find(d=>d.id===dId);
+  if(!doc)return;
+  const isPdf=doc.type==='application/pdf'||doc.name.endsWith('.pdf');
+  const ext=doc.name.split('.').pop().toLowerCase();
+
+  document.getElementById('doc-modal-name').textContent=doc.name;
+  document.getElementById('doc-modal-icon').textContent=isPdf?'📕':'📄';
+  document.getElementById('doc-modal-type').textContent=ext.toUpperCase();
+
+  const frame=document.getElementById('doc-viewer-frame');
+  const textDiv=document.getElementById('doc-viewer-text');
+
+  if(isPdf){
+    frame.style.display='block';
+    textDiv.style.display='none';
+    frame.src=doc.content; // base64 data URL
+  } else {
+    frame.style.display='none';
+    textDiv.style.display='block';
+    // Render markdown-lite: bold, italic, headings, code
+    let html=esc(doc.content)
+      .replace(/^# (.+)$/gm,'<h1 style="font-family:\'Playfair Display\',serif;font-size:20px;font-weight:900;color:var(--accent);margin:12px 0 6px">$1</h1>')
+      .replace(/^## (.+)$/gm,'<h2 style="font-size:15px;font-weight:700;margin:10px 0 4px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:3px">$1</h2>')
+      .replace(/^### (.+)$/gm,'<h3 style="font-size:13px;font-weight:700;margin:8px 0 3px;color:var(--text2)">$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/`(.+?)`/g,'<code style="background:var(--surface2);border-radius:3px;padding:1px 5px;font-size:12px;font-family:monospace">$1</code>')
+      .replace(/^[-*] (.+)$/gm,'<li style="margin:2px 0;padding-left:4px">$1</li>')
+      .replace(/\n/g,'<br>');
+    textDiv.innerHTML=html;
+  }
+
+  document.getElementById('doc-overlay').style.display='block';
+  document.getElementById('doc-modal').classList.add('open');
+}
+
+function closeDocViewer(){
+  document.getElementById('doc-overlay').style.display='none';
+  document.getElementById('doc-modal').classList.remove('open');
+  // Clear iframe src to stop PDF rendering
+  document.getElementById('doc-viewer-frame').src='';
+}
+
+// Add subject
+function showAddSub(){
+  const area=document.getElementById('add-sub-area');
+  window._sc=COLORS[0];
+  area.innerHTML=`<div class="inline-input-row">
+    <input class="inline-input" id="ns-inp" placeholder="Nom de la matière…" maxlength="40"
+      onkeydown="if(event.key==='Enter')okAddSub();if(event.key==='Escape')renderSidebar()">
+    <button class="ok-btn" onclick="okAddSub()">✓</button>
+    <button class="x-btn" onclick="renderSidebar()">×</button></div>
+  <div class="color-row">${COLORS.map(c=>`<div class="cswatch${c===COLORS[0]?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join('')}</div>`;
+  document.getElementById('ns-inp')?.focus();
+}
+function pickColor(c){
+  document.querySelectorAll('.cswatch').forEach(s=>s.classList.toggle('sel',s.style.background===c||s.style.backgroundColor===c));
+  window._sc=c;
+}
+function okAddSub(){
+  const name=document.getElementById('ns-inp')?.value?.trim();if(!name)return;
+  const ns={id:uid(),name,color:window._sc||COLORS[0],chapters:[]};
+  state.subjects.push(ns);state.expanded[ns.id]=true;saveState();render();
+}
+
+// Add chapter
+function showAddCh(sId){
+  const row=document.getElementById('add-ch-'+sId);if(!row)return;
+  row.innerHTML=`<div class="inline-input-row ch">
+    <input class="inline-input" id="nc-inp-${sId}" placeholder="Nom du chapitre…" maxlength="60"
+      onkeydown="if(event.key==='Enter')okAddCh('${sId}');if(event.key==='Escape')renderSidebar()">
+    <button class="ok-btn" onclick="okAddCh('${sId}')">✓</button>
+    <button class="x-btn" onclick="renderSidebar()">×</button></div>`;
+  document.getElementById('nc-inp-'+sId)?.focus();
+}
+function okAddCh(sId){
+  const name=document.getElementById('nc-inp-'+sId)?.value?.trim();if(!name)return;
+  const s=getSub(sId);if(!s)return;
+  const nc={id:uid(),name,notes:'',docs:[],exercises:null,scores:[]};
+  s.chapters.push(nc);saveState();selCh(sId,nc.id);
+}
+
+// Rename
+function startRenameSub(e,sId){e.stopPropagation();const el=document.getElementById('rsub-'+sId);if(el){el.style.display='block';document.getElementById('rsi-'+sId)?.focus();document.getElementById('rsi-'+sId)?.select();}}
+function okRenameSub(sId){const name=document.getElementById('rsi-'+sId)?.value?.trim();if(!name)return;const s=getSub(sId);if(s){s.name=name;saveState();}render();}
+function startRenameCh(e,sId,chId){e.stopPropagation();const el=document.getElementById('rch-'+chId);if(el){el.style.display='block';document.getElementById('rci-'+chId)?.focus();document.getElementById('rci-'+chId)?.select();}}
+function okRenameCh(sId,chId){const name=document.getElementById('rci-'+chId)?.value?.trim();if(!name)return;const ch=getCh(sId,chId);if(ch){ch.name=name;saveState();}render();}
+function hideRename(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+
+// Delete → Trash
+function delSub(e,sId){
+  e.stopPropagation();const s=getSub(sId);if(!s)return;
+  state.trash.unshift({type:'subject',deletedAt:Date.now(),data:JSON.parse(JSON.stringify(s))});
+  state.subjects=state.subjects.filter(x=>x.id!==sId);
+  if(state.sel.subId===sId){state.sel={subId:null,chId:null};state.exercises=null;}
+  saveState();render();showToast('Matière déplacée dans la corbeille');
+}
+function delCh(e,sId,chId){
+  e.stopPropagation();const s=getSub(sId);if(!s)return;
+  const ch=s.chapters.find(c=>c.id===chId);if(!ch)return;
+  state.trash.unshift({type:'chapter',deletedAt:Date.now(),subjectId:sId,subjectName:s.name,data:JSON.parse(JSON.stringify(ch))});
+  s.chapters=s.chapters.filter(c=>c.id!==chId);
+  if(state.sel.chId===chId){state.sel.chId=null;state.exercises=null;}
+  saveState();render();showToast('Chapitre déplacé dans la corbeille');
+}
+
+// QCM
+function selQcm(qi,l){if(state.qSub)return;state.qAns[qi]=l;renderExercises();}
+function submitQcm(){
+  state.qSub=true;
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  if(ch&&state.exercises?.questions){
+    const sc=state.exercises.questions.filter((q,i)=>state.qAns[i]===q.answer).length;
+    const pct=Math.round(sc/state.exercises.questions.length*100);
+    ch.scores.push({pct,date:new Date().toLocaleDateString('fr-FR'),ts:Date.now()});
+    if(ch.scores.length>10)ch.scores=ch.scores.slice(-10);
+    saveState();renderSidebar();
+  }
+  renderExercises();
+}
+function flipCard(){state.fcFlip=!state.fcFlip;renderExercises();}
+function fcPrev(){if(state.fcIdx>0){state.fcIdx--;state.fcFlip=false;renderExercises();}}
+function fcNext(){const c=state.exercises?.cards||[];if(state.fcIdx<c.length-1){state.fcIdx++;state.fcFlip=false;renderExercises();}}
+
+// Sidebar search
+function handleSearch(){renderSidebar();}
+function hlText(text,q){
+  const e=esc(text),idx=e.toLowerCase().indexOf(q.toLowerCase());
+  if(idx<0)return e;
+  return e.slice(0,idx)+`<span class="hl">${e.slice(idx,idx+q.length)}</span>`+e.slice(idx+q.length);
+}
+
+// ============================================================
+// CONTENT SEARCH (Ctrl+F — search inside notes editor)
+// ============================================================
+const cs={matches:[],cur:-1,active:false};
+
+function toggleContentSearch(){
+  const bar=document.getElementById('content-search-bar');
+  if(cs.active){closeContentSearch();}
+  else{cs.active=true;bar.classList.add('visible');const inp=document.getElementById('cs-input');inp.value='';inp.focus();csUpdateCount();}
+}
+
+function closeContentSearch(){
+  cs.active=false;cs.matches=[];cs.cur=-1;
+  document.getElementById('content-search-bar').classList.remove('visible');
+  csRemoveHighlights();
+  csUpdateCount();
+}
+
+function csKey(e){
+  if(e.key==='Escape'){closeContentSearch();}
+  else if(e.key==='Enter'){csNav(e.shiftKey?-1:1);}
+}
+
+function csSearch(){
+  const q=document.getElementById('cs-input').value;
+  csRemoveHighlights();
+  cs.matches=[];cs.cur=-1;
+  if(!q){csUpdateCount();return;}
+  const ed=document.getElementById('notes-editor');
+  if(!ed){csUpdateCount();return;}
+  // Walk text nodes, wrap matches
+  const walker=document.createTreeWalker(ed,NodeFilter.SHOW_TEXT,null);
+  const nodes=[];
+  while(walker.nextNode())nodes.push(walker.currentNode);
+  const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+  nodes.forEach(node=>{
+    const txt=node.nodeValue;
+    if(!re.test(txt)){re.lastIndex=0;return;}
+    re.lastIndex=0;
+    const frag=document.createDocumentFragment();
+    let last=0,m;
+    while((m=re.exec(txt))!==null){
+      if(m.index>last)frag.appendChild(document.createTextNode(txt.slice(last,m.index)));
+      const span=document.createElement('span');
+      span.className='hl';span.textContent=m[0];
+      cs.matches.push(span);
+      frag.appendChild(span);
+      last=m.index+m[0].length;
+    }
+    if(last<txt.length)frag.appendChild(document.createTextNode(txt.slice(last)));
+    node.parentNode.replaceChild(frag,node);
+  });
+  if(cs.matches.length>0){cs.cur=0;csHighlightCur();}
+  csUpdateCount();
+}
+
+function csNav(dir){
+  if(!cs.matches.length)return;
+  if(cs.cur>=0)cs.matches[cs.cur].className='hl';
+  cs.cur=(cs.cur+dir+cs.matches.length)%cs.matches.length;
+  csHighlightCur();
+  csUpdateCount();
+}
+
+function csHighlightCur(){
+  if(cs.cur<0||!cs.matches[cs.cur])return;
+  const el=cs.matches[cs.cur];
+  el.className='hl hl-current';
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function csRemoveHighlights(){
+  const ed=document.getElementById('notes-editor');
+  if(!ed)return;
+  // Unwrap all .hl spans, restoring text nodes
+  ed.querySelectorAll('span.hl,span.hl-current').forEach(span=>{
+    const txt=document.createTextNode(span.textContent);
+    span.parentNode.replaceChild(txt,span);
+  });
+  // Normalize merges adjacent text nodes
+  ed.normalize();
+}
+
+function csUpdateCount(){
+  const cnt=document.getElementById('cs-count');
+  const prev=document.getElementById('cs-prev');
+  const next=document.getElementById('cs-next');
+  if(!cnt)return;
+  const n=cs.matches.length;
+  if(!document.getElementById('cs-input').value){cnt.textContent='';if(prev)prev.disabled=true;if(next)next.disabled=true;return;}
+  cnt.textContent=n===0?'Aucun résultat':`${cs.cur+1} / ${n}`;
+  if(prev)prev.disabled=n<2;
+  if(next)next.disabled=n<2;
+}
+
+// Sidebar toggle
+function toggleSidebar(){
+  if(window.innerWidth<=680){
+    document.getElementById('sidebar').classList.toggle('mob-open');
+    document.getElementById('mob-overlay').classList.toggle('open');
+  } else {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+}
+function closeMobSidebar(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mob-overlay').classList.remove('open');
+}
+
+// Dashboard
+function openDashboard(){state.view='dashboard';state.sel={subId:null,chId:null};render();if(window.innerWidth<=680)closeMobSidebar();}
+function closeDashboard(){state.view='chapter';render();}
+
+// Export PDF
+function exportPDF(){
+  const ch=getCh(state.sel.subId,state.sel.chId);
+  const sub=getSub(state.sel.subId);if(!ch)return;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(ch.name)}</title>
+    <style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#1A1814;line-height:1.8;font-size:14px;}
+    h1{font-size:24px;color:#C8860A;border-bottom:2px solid #C8860A;padding-bottom:8px;margin-bottom:18px;}
+    h2{font-size:18px;color:#333;margin:20px 0 6px;border-bottom:1px solid #DDD;padding-bottom:4px;}
+    h3{font-size:14px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 4px;}
+    blockquote{border-left:3px solid #C8860A;padding:6px 14px;background:#FFF8E7;color:#666;margin:10px 0;font-style:italic;}
+    ul,ol{padding-left:22px;}li{margin:3px 0;}
+    .meta{font-size:11px;color:#999;border-bottom:1px solid #EEE;padding-bottom:10px;margin-bottom:22px;}
+    .subj{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:4px;}
+    @media print{body{margin:20px;}}
+    </style></head><body>
+    <div class="meta"><div class="subj">${esc(sub?.name||'')}</div>Exporté le ${new Date().toLocaleDateString('fr-FR')}</div>
+    <h1>${esc(ch.name)}</h1>${ch.notes||'<p style="color:#999;font-style:italic">Aucune note.</p>'}
+    </body></html>`);
+  win.document.close();setTimeout(()=>win.print(),500);
+}
+
+// ============================================================
+// AI GENERATION
+// ============================================================
+async function generateExercises(){
+  const ch=getCh(state.sel.subId,state.sel.chId);if(!ch)return;
+  const notesText=(ch.notes||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  if(!notesText){showToast('⚠ Écris des notes avant de générer !');return;}
+  const type=document.getElementById('exercise-type').value;
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;btn.textContent='⏳ Génération…';
+  state.loading=true;state.exercises=null;state.qAns={};state.qSub=false;state.fcIdx=0;state.fcFlip=false;
+  renderExercises();
+  const prompts={
+    QCM:`Tu es un professeur expert. Génère 5 QCM en français basées uniquement sur ces notes. Réponds UNIQUEMENT avec du JSON valide sans backticks ni texte autour :
+{"type":"QCM","questions":[{"q":"?","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A"}]}
+Notes : ${notesText.slice(0,2800)}`,
+    open:`Tu es un professeur expert. Génère 5 questions ouvertes avec réponses en français basées sur ces notes. JSON uniquement :
+{"type":"open","questions":[{"q":"?","answer":"..."}]}
+Notes : ${notesText.slice(0,2800)}`,
+    flashcards:`Tu es un professeur expert. Génère 6 flashcards recto/verso en français basées sur ces notes. JSON uniquement :
+{"type":"flashcards","cards":[{"front":"...","back":"..."}]}
+Notes : ${notesText.slice(0,2800)}`
+  };
+  try{
+    const res=await fetch('/.netlify/functions/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompts[type]})});
+    const data=await res.json();
+    const text=data.text||'';
+    const clean=text.replace(/```json|```/g,'').trim();
+    state.exercises=JSON.parse(clean);
+    ch.exercises=state.exercises;
+    saveState();renderSidebar();
+    showToast('✓ Exercices générés !');
+  }catch(e){showToast('❌ Erreur de génération. Vérifie ta connexion.');state.exercises=null;}
+  state.loading=false;btn.disabled=false;btn.textContent='✦ Générer des exercices';
+  renderExercises();
+}
+
+// ============================================================
+// TRASH
+// ============================================================
+function openTrash(){
+  document.getElementById('trash-overlay').style.display='block';
+  document.getElementById('trash-modal').classList.add('open');
+  renderTrashList();
+}
+function closeTrash(){
+  document.getElementById('trash-overlay').style.display='none';
+  document.getElementById('trash-modal').classList.remove('open');
+}
+function renderTrashList(){
+  const list=document.getElementById('trash-list');
+  const emptyBtn=document.getElementById('trash-empty-btn');
+  if(state.trash.length===0){
+    list.innerHTML=`<div style="text-align:center;padding:32px 18px;color:var(--text3);font-style:italic;font-size:12.5px">La corbeille est vide</div>`;
+    if(emptyBtn)emptyBtn.style.display='none';return;
+  }
+  if(emptyBtn)emptyBtn.style.display='inline-block';
+  list.innerHTML=state.trash.map((item,i)=>{
+    const d=new Date(item.deletedAt);
+    const ts=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const icon=item.type==='subject'?'📚':'📄';
+    const info=item.type==='chapter'?`${esc(item.subjectName)}`:`${item.data.chapters?.length||0} chapitre(s)`;
+    return `<div style="display:flex;align-items:center;gap:9px;padding:10px 16px;border-bottom:1px solid var(--border);transition:background .12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="font-size:18px">${icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.data.name)}</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:1px">${info} · ${ts}</div>
+      </div>
+      <button onclick="restoreItem(${i})" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;flex-shrink:0;transition:all .12s" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">↩ Restaurer</button>
+      <button onclick="delTrashItem(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:3px;transition:color .12s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'" title="Supprimer définitivement">×</button>
+    </div>`;
+  }).join('');
+}
+function restoreItem(i){
+  const item=state.trash[i];if(!item)return;
+  if(item.type==='subject'){state.subjects.push(item.data);state.expanded[item.data.id]=true;}
+  else{const s=getSub(item.subjectId);if(s)s.chapters.push(item.data);else{const ns={id:uid(),name:item.subjectName+' (restauré)',color:'#9090A8',chapters:[item.data]};state.subjects.push(ns);}}
+  state.trash.splice(i,1);saveState();render();renderTrashList();showToast('✓ Élément restauré');
+}
+function delTrashItem(i){state.trash.splice(i,1);saveState();renderTrashList();renderSidebar();}
+function emptyTrash(){if(!confirm('Vider définitivement la corbeille ?'))return;state.trash=[];saveState();renderTrashList();renderSidebar();}
+
+// ============================================================
+// ONBOARDING
+// ============================================================
+let obStep=0;
+function openOb(){document.getElementById('ob-overlay').classList.add('open');obStep=0;syncOb();}
+function closeOb(){document.getElementById('ob-overlay').classList.remove('open');try{localStorage.setItem('studyspace-onboarded','1');}catch(e){}}
+function syncOb(){
+  document.querySelectorAll('.ob-step').forEach((s,i)=>s.classList.toggle('active',i===obStep));
+  document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('active',i===obStep));
+  document.getElementById('ob-next-btn').textContent=obStep>=2?'Commencer !':'Suivant →';
+}
+function obNext(){if(obStep>=2){closeOb();return;}obStep++;syncOb();}
+document.getElementById('ob-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeOb();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOb();closeTrash();closeExModal();closeDocViewer();closeIbadah();closeRomans();document.getElementById('rom-pdf-overlay')?.classList.remove('open');if(cs.active)closeContentSearch();}});
+
+// ============================================================
+// GLOBAL KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown',e=>{
+  // Ctrl+F — content search (only when a chapter is open)
+  if((e.ctrlKey||e.metaKey)&&(e.key==='f'||e.key==='F')&&state.sel.chId&&state.view!=='dashboard'){
+    e.preventDefault();toggleContentSearch();return;
+  }
+  if(e.altKey){
+    if(e.key==='s'||e.key==='S'){e.preventDefault();toggleSidebar();}
+    if(e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-input')?.focus();}
+    if(e.key==='d'||e.key==='D'){e.preventDefault();openDashboard();}
+    if(e.key==='n'||e.key==='N'){e.preventDefault();if(state.sel.chId)closeExModal();}
+    if(e.key==='e'||e.key==='E'){e.preventDefault();if(state.sel.chId)openExModal();}
+  }
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function toggleTheme(){
+  const l=document.body.classList.toggle('light');
+  document.getElementById('theme-toggle').textContent=l?'☀️':'🌙';
+  try{localStorage.setItem('studyspace-theme',l?'light':'dark');}catch(e){}
+}
+function loadTheme(){
+  try{if(localStorage.getItem('studyspace-theme')==='light'){document.body.classList.add('light');const b=document.getElementById('theme-toggle');if(b)b.textContent='☀️';}}catch(e){}
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ============================================================
+// IBADAH
+// ============================================================
+const IBADAH_KEY = 'studyspace-ibadah';
+
+const PRAYERS = [
+  {id:'fajr',   name:'Fajr',    target:4,  icon:'🌅'},
+  {id:'tisbar', name:'Tisbar',  target:8,  icon:'☀️'},
+  {id:'takussan',name:'Takussan',target:6, icon:'🌤'},
+  {id:'timis',  name:'Timis',   target:5,  icon:'🌇'},
+  {id:'guewe',  name:'Guewe',   target:9,  icon:'🌙'},
+  {id:'nafila', name:'Nafila',  target:10, icon:'⭐'},
+];
+const LECTURES = [
+  {id:'lect-matin', label:'Lecture du matin', icon:'📖'},
+  {id:'lect-soir',  label:'Lecture du soir',  icon:'📚'},
+];
+const DHIKRS = [
+  {id:'dhikr-matin',    label:'Dhikr du matin',     target:500},
+  {id:'dhikr-midi',     label:'Dhikr de midi',       target:500},
+  {id:'dhikr-apmidi',   label:'Dhikr de l\'après-midi', target:500},
+  {id:'dhikr-soir',     label:'Dhikr du soir',       target:500},
+];
+
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+function loadIbadah(){
+  try{
+    const raw=localStorage.getItem(IBADAH_KEY);
+    if(!raw) return freshIbadah();
+    const p=JSON.parse(raw);
+    // Auto-reset if new day
+    if(p.date !== todayKey()){
+      // save yesterday to history before reset
+      const hist=p.history||[];
+      hist.unshift({date:p.date, pct:calcIbPct(p)});
+      if(hist.length>7) hist.pop();
+      const fresh=freshIbadah();
+      fresh.history=hist;
+      saveIbadah(fresh);
+      return fresh;
+    }
+    return p;
+  }catch(e){ return freshIbadah(); }
+}
+
+function freshIbadah(){
+  const d={date:todayKey(), history:[]};
+  PRAYERS.forEach(p=>d[p.id]=0);
+  LECTURES.forEach(l=>d[l.id]=false);
+  DHIKRS.forEach(k=>d[k.id]=0);
+  return d;
+}
+
+function saveIbadah(d){
+  try{ localStorage.setItem(IBADAH_KEY, JSON.stringify(d)); }catch(e){}
+}
+
+function calcIbPct(d){
+  let done=0, total=0;
+  PRAYERS.forEach(p=>{ total+=p.target; done+=Math.min(d[p.id]||0, p.target); });
+  LECTURES.forEach(l=>{ total+=1; done+=d[l.id]?1:0; });
+  DHIKRS.forEach(k=>{ total+=k.target; done+=Math.min(d[k.id]||0, k.target); });
+  return total>0 ? Math.round(done/total*100) : 0;
+}
+
+function openIbadah(){
+  document.getElementById('ib-overlay').style.display='block';
+  document.getElementById('ib-modal').classList.add('open');
+  renderIbadah();
+  if(window.innerWidth<=680) closeMobSidebar();
+}
+function closeIbadah(){
+  document.getElementById('ib-overlay').style.display='none';
+  document.getElementById('ib-modal').classList.remove('open');
+}
+function resetIbadah(){
+  if(!confirm('Remettre à zéro toutes les activités d\'aujourd\'hui ?')) return;
+  const d=loadIbadah();
+  PRAYERS.forEach(p=>d[p.id]=0);
+  LECTURES.forEach(l=>d[l.id]=false);
+  DHIKRS.forEach(k=>d[k.id]=0);
+  saveIbadah(d);
+  renderIbadah();
+  showToast('Activités remises à zéro');
+}
+
+function renderIbadah(){
+  const d=loadIbadah();
+  const body=document.getElementById('ib-body');
+  const dateEl=document.getElementById('ib-date');
+
+  // Date display
+  const now=new Date();
+  dateEl.textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  const pct=calcIbPct(d);
+
+  // Global progress
+  let html=`
+  <div class="ib-global-bar">
+    <div class="ib-global-pct">${pct}%</div>
+    <div class="ib-global-info">
+      <div class="ib-global-label">Progression du jour</div>
+      <div class="ib-prog-track"><div class="ib-prog-fill" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
+
+  // === PRIÈRES ===
+  html+=`<div class="ib-section">
+    <div class="ib-section-title">🕌 Prières</div>`;
+  PRAYERS.forEach(p=>{
+    const val=d[p.id]||0;
+    const done=val>=p.target;
+    html+=`<div class="prayer-card${done?' done':''}">
+      <span style="font-size:20px">${p.icon}</span>
+      <div style="flex:1">
+        <div class="prayer-name">${p.name}</div>
+        <div class="prayer-target">${val} / ${p.target} rak'at</div>
+      </div>
+      <div class="prayer-counter">
+        <button class="ctr-btn" onclick="ibPrayerAdj('${p.id}',-1)">−</button>
+        <span class="ctr-val${done?' complete':''}">${val}</span>
+        <button class="ctr-btn" onclick="ibPrayerAdj('${p.id}',1)">+</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // === LECTURES ===
+  html+=`<div class="ib-section">
+    <div class="ib-section-title">📖 Lectures</div>`;
+  LECTURES.forEach(l=>{
+    const done=!!d[l.id];
+    html+=`<div class="lecture-row${done?' done':''}" onclick="ibToggleLecture('${l.id}')">
+      <div class="lecture-check">${done?'✓':''}</div>
+      <span class="lecture-label">${l.icon} ${l.label}</span>
+      <span style="font-size:11px;color:${done?'var(--green)':'var(--text3)'}">${done?'Accomplie':'En attente'}</span>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // === DHIKR ===
+  html+=`<div class="ib-section">
+    <div class="ib-section-title">📿 Dhikr</div>`;
+  DHIKRS.forEach(k=>{
+    const val=d[k.id]||0;
+    const done=val>=k.target;
+    const pctD=Math.min(100,Math.round(val/k.target*100));
+    html+=`<div class="dhikr-row${done?' done':''}">
+      <div class="dhikr-top">
+        <span class="dhikr-label">${k.label}</span>
+        <span class="dhikr-count${done?' complete':''}">${val} / ${k.target}</span>
+      </div>
+      <div class="dhikr-track"><div class="dhikr-fill" style="width:${pctD}%"></div></div>
+      <div class="dhikr-btns">
+        <button class="dhikr-add" onclick="ibDhikrAdd('${k.id}',1)">+1</button>
+        <button class="dhikr-add" onclick="ibDhikrAdd('${k.id}',10)">+10</button>
+        <button class="dhikr-add" onclick="ibDhikrAdd('${k.id}',50)">+50</button>
+        <button class="dhikr-add" onclick="ibDhikrAdd('${k.id}',100)">+100</button>
+        <button class="dhikr-add" onclick="ibDhikrAdd('${k.id}',-1)" style="margin-left:auto;color:var(--text3)">−1</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // === HISTORIQUE ===
+  if(d.history && d.history.length>0){
+    html+=`<div class="ib-section">
+      <div class="ib-section-title">📅 Historique (7 jours)</div>
+      <div class="hist-row">`;
+    // Show today + past days
+    const allDays=[{date:'Auj.',pct},...d.history.map(h=>({
+      date:new Date(h.date).toLocaleDateString('fr-FR',{weekday:'short'}),pct:h.pct
+    }))].slice(0,7);
+    allDays.reverse().forEach(day=>{
+      const h=Math.max(4,Math.round(day.pct*40/100));
+      html+=`<div class="hist-day">
+        <div class="hist-pct">${day.pct}%</div>
+        <div class="hist-bar-wrap"><div class="hist-bar-fill" style="height:${h}px;background:${day.pct>=80?'var(--green)':day.pct>=50?'var(--accent)':'var(--red)'}"></div></div>
+        <div class="hist-label">${day.date}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  body.innerHTML=html;
+}
+
+function ibPrayerAdj(id, delta){
+  const d=loadIbadah();
+  const prayer=PRAYERS.find(p=>p.id===id);
+  d[id]=Math.max(0, Math.min(prayer.target, (d[id]||0)+delta));
+  saveIbadah(d);
+  renderIbadah();
+}
+function ibToggleLecture(id){
+  const d=loadIbadah();
+  d[id]=!d[id];
+  saveIbadah(d);
+  renderIbadah();
+}
+function ibDhikrAdd(id, delta){
+  const d=loadIbadah();
+  const dhikr=DHIKRS.find(k=>k.id===id);
+  d[id]=Math.max(0, Math.min(dhikr.target, (d[id]||0)+delta));
+  saveIbadah(d);
+  renderIbadah();
+}
+
+// ============================================================
+// ROMANS
+// ============================================================
+const ROM_KEY = 'studyspace-romans';
+
+let rS = {
+  collections: [], // [{id,name,_exp,novels:[{id,name,cover,synopsis,chapters:[{id,name,content}]}]}]
+  collId: null, novelId: null, chapId: null // chapId null = cover page
+};
+
+function rLoad(){
+  try{const r=localStorage.getItem(ROM_KEY);if(r)rS.collections=JSON.parse(r);}catch(e){}
+}
+function rSave(){
+  try{localStorage.setItem(ROM_KEY,JSON.stringify(rS.collections));}catch(e){}
+}
+function rColl(id){return rS.collections.find(c=>c.id===id);}
+function rNovel(cId,nId){const c=rColl(cId);return c?c.novels.find(n=>n.id===nId):null;}
+function rChap(cId,nId,chId){const n=rNovel(cId,nId);return n?n.chapters.find(c=>c.id===chId):null;}
+
+function openRomans(){
+  document.getElementById('rom-overlay').style.display='block';
+  document.getElementById('rom-modal').classList.add('open');
+  rRenderList();
+  if(window.innerWidth<=680)closeMobSidebar();
+}
+function closeRomans(){
+  document.getElementById('rom-overlay').style.display='none';
+  document.getElementById('rom-modal').classList.remove('open');
+}
+
+// --- RENDER SIDEBAR ---
+function rRenderList(){
+  const list=document.getElementById('rom-list');
+  list.innerHTML='';
+  rS.collections.forEach(coll=>{
+    const isExp=!!coll._exp;
+    const wrap=document.createElement('div');
+    // Collection header
+    const hdr=document.createElement('div');
+    hdr.className='rom-coll-hdr'+(isExp?' expanded':'');
+    hdr.innerHTML=`<span style="font-size:13px">📚</span>
+      <span class="rom-coll-name">${esc(coll.name)}</span>
+      <span class="rom-coll-chevron">▶</span>
+      <button class="rom-icon-btn edit" onclick="rRenameColl(event,'${coll.id}')" title="Renommer">✏️</button>
+      <button class="rom-icon-btn" onclick="rDelColl(event,'${coll.id}')" title="Supprimer">🗑</button>`;
+    hdr.onclick=e=>{if(e.target.closest('.rom-icon-btn'))return;coll._exp=!coll._exp;rRenderList();};
+    wrap.appendChild(hdr);
+    // Novels list
+    const nList=document.createElement('div');
+    nList.className='rom-novels-list'+(isExp?' open':'');
+    (coll.novels||[]).forEach(novel=>{
+      const row=document.createElement('div');
+      row.className='rom-novel-row'+(rS.novelId===novel.id?' active':'');
+      const hasCover=novel.cover&&novel.cover.length>10;
+      row.innerHTML=`${hasCover?`<img class="rom-novel-thumb" src="${novel.cover}" alt="">`:
+        `<div class="rom-novel-thumb-ph">📖</div>`}
+        <div class="rom-novel-info">
+          <div class="rom-novel-name">${esc(novel.name)}</div>
+          <div class="rom-novel-meta">${(novel.chapters||[]).length} ch. · ${rNovelWC(novel).toLocaleString('fr-FR')} mots</div>
+        </div>
+        <button class="rom-icon-btn edit" onclick="rRenameNovel(event,'${coll.id}','${novel.id}')" title="Renommer">✏️</button>
+        <button class="rom-icon-btn" onclick="rDelNovel(event,'${coll.id}','${novel.id}')" title="Supprimer">🗑</button>`;
+      row.onclick=e=>{if(e.target.closest('.rom-icon-btn'))return;rSelNovel(coll.id,novel.id);};
+      nList.appendChild(row);
+    });
+    wrap.appendChild(nList);
+    list.appendChild(wrap);
+  });
+  const addNovelBtn=document.getElementById('rom-add-novel-btn');
+  if(addNovelBtn) addNovelBtn.style.display=rS.collId?'flex':'none';
+}
+
+// --- RENDER CHAPTER LIST ---
+function rRenderChaps(){
+  const novel=rNovel(rS.collId,rS.novelId);
+  document.getElementById('rom-chaplist-name').textContent=novel?novel.name:'—';
+  const addBtn=document.getElementById('rom-add-chap-btn');
+  if(addBtn) addBtn.style.display=novel?'flex':'none';
+  const items=document.getElementById('rom-chap-items');
+  items.innerHTML='';
+  if(!novel)return;
+  // Cover row
+  const covRow=document.createElement('div');
+  covRow.className='rom-chap-item'+(rS.chapId===null?' active':'');
+  covRow.innerHTML=`<span class="rom-chap-num">—</span><span class="rom-chap-name-el">Couverture</span>`;
+  covRow.onclick=()=>rSelChap(null);
+  items.appendChild(covRow);
+  // Chapter rows
+  (novel.chapters||[]).forEach((ch,i)=>{
+    const row=document.createElement('div');
+    row.className='rom-chap-item'+(rS.chapId===ch.id?' active':'');
+    row.innerHTML=`<span class="rom-chap-num">${i+1}</span>
+      <span class="rom-chap-name-el">${esc(ch.name)}</span>
+      <button class="rom-icon-btn" onclick="rDelChap(event,'${ch.id}')" title="Supprimer">🗑</button>`;
+    row.onclick=e=>{if(e.target.closest('.rom-icon-btn'))return;rSelChap(ch.id);};
+    items.appendChild(row);
+  });
+}
+
+// --- RENDER EDITOR ---
+function rRenderEditor(){
+  const novel=rNovel(rS.collId,rS.novelId);
+  const emptyEl=document.getElementById('rom-empty');
+  const topbar=document.getElementById('rom-topbar');
+  const wrap=document.getElementById('rom-editor-wrap');
+  const coverSec=document.getElementById('rom-cover-sec');
+  const chapSec=document.getElementById('rom-chap-sec');
+
+  if(!novel){
+    emptyEl.style.display='flex';
+    topbar.style.display='none';
+    wrap.style.display='none';
+    return;
+  }
+  emptyEl.style.display='none';
+  topbar.style.display='flex';
+  wrap.style.display='flex';
+
+  const coll=rColl(rS.collId);
+  document.getElementById('rom-tb-coll').textContent=coll?coll.name:'';
+  document.getElementById('rom-tb-title').textContent=rS.chapId===null?novel.name:(rChap(rS.collId,rS.novelId,rS.chapId)?.name||'');
+
+  if(rS.chapId===null){
+    // Cover page
+    coverSec.classList.add('visible');
+    chapSec.classList.remove('visible');
+    document.getElementById('rom-cover-title').textContent=novel.name;
+    document.getElementById('rom-cover-coll').textContent=coll?coll.name:'';
+    const totalWC=rNovelWC(novel);
+    const chapCount=(novel.chapters||[]).length;
+    document.getElementById('rom-cover-stats').innerHTML=`<span>${chapCount} chapitre(s)</span><span>${totalWC.toLocaleString('fr-FR')} mots au total</span>`;
+    document.getElementById('rom-synopsis').value=novel.synopsis||'';
+    // Cover image
+    const ph=document.getElementById('rom-cover-ph');
+    const img=document.getElementById('rom-cover-img');
+    if(novel.cover){img.src=novel.cover;img.style.display='block';ph.style.display='none';}
+    else{img.style.display='none';ph.style.display='flex';}
+  } else {
+    // Chapter writing
+    coverSec.classList.remove('visible');
+    chapSec.classList.add('visible');
+    const ch=rChap(rS.collId,rS.novelId,rS.chapId);
+    const writer=document.getElementById('rom-writer');
+    writer.innerHTML=ch?ch.content||'':'';
+    rUpdateStats();
+    setTimeout(()=>{writer.focus();},60);
+  }
+}
+
+function rUpdateStats(){
+  const ch=rChap(rS.collId,rS.novelId,rS.chapId);
+  const novel=rNovel(rS.collId,rS.novelId);
+  if(!ch||!novel)return;
+  const chapWC=rCountWords(ch.content||'');
+  const totalWC=rNovelWC(novel);
+  const plainText=(ch.content||'').replace(/<[^>]+>/g,' ');
+  const chars=plainText.replace(/\s+/g,'').length;
+  document.getElementById('rom-wc-chap').textContent=chapWC.toLocaleString('fr-FR');
+  document.getElementById('rom-wc-total').textContent=totalWC.toLocaleString('fr-FR');
+  document.getElementById('rom-read-time').textContent=Math.max(1,Math.round(totalWC/200));
+  const ccEl=document.getElementById('rom-char-count');
+  if(ccEl)ccEl.textContent=chars.toLocaleString('fr-FR');
+}
+function rCountWords(html){
+  const txt=(html||'').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ');
+  return txt.trim()?txt.trim().split(/\s+/).filter(w=>w.length>0).length:0;
+}
+
+function romFmt(cmd,val){
+  document.execCommand(cmd,false,val||null);
+  document.getElementById('rom-writer')?.focus();
+  romUpdateTb();
+}
+function romUpdateTb(){
+  [['rwtb-bold','bold'],['rwtb-italic','italic'],['rwtb-underline','underline']].forEach(([id,cmd])=>{
+    const b=document.getElementById(id);if(b)b.classList.toggle('active',document.queryCommandState(cmd));
+  });
+}
+
+function romHandleKey(e){
+  // Tab → indent 4 spaces
+  if(e.key==='Tab'){
+    e.preventDefault();
+    document.execCommand('insertText',false,'    ');
+    return;
+  }
+  // F11 → focus mode
+  if(e.key==='F11'){e.preventDefault();romToggleFocus();return;}
+  // Ctrl+B/I/U
+  if(e.ctrlKey||e.metaKey){
+    if(e.key==='b'){e.preventDefault();romFmt('bold');}
+    if(e.key==='i'){e.preventDefault();romFmt('italic');}
+    if(e.key==='u'){e.preventDefault();romFmt('underline');}
+  }
+}
+
+function romInsertImg(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const src=ev.target.result;
+    const writer=document.getElementById('rom-writer');
+    writer.focus();
+    // Insert image with optional caption
+    const imgHtml=`<figure class="rom-img-wrap" contenteditable="false">
+      <img src="${src}" alt="Illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto;cursor:pointer;" onclick="this.classList.toggle('selected')">
+      <figcaption class="rom-img-caption" contenteditable="true" data-placeholder="Légende (optionnelle)…"></figcaption>
+    </figure><p><br></p>`;
+    document.execCommand('insertHTML',false,imgHtml);
+    romSaveChap();
+    showToast('🖼 Image insérée');
+  };
+  reader.readAsDataURL(file);
+  inp.value='';
+}
+
+let romFocusMode=false;
+function romToggleFocus(){
+  romFocusMode=!romFocusMode;
+  document.body.classList.toggle('rom-focus',romFocusMode);
+  const btn=document.getElementById('rom-focus-btn');
+  if(btn){btn.textContent=romFocusMode?'↩ Quitter focus':'🖊 Focus';btn.classList.toggle('active',romFocusMode);}
+  if(romFocusMode) document.getElementById('rom-writer')?.focus();
+}
+function rCountWords(txt){return txt.trim()?txt.trim().split(/\s+/).length:0;}
+function rNovelWC(novel){return(novel.chapters||[]).reduce((a,c)=>a+rCountWords(c.content||''),0);}
+
+// --- SELECTION ---
+function rSelNovel(collId,novelId){
+  rS.collId=collId;rS.novelId=novelId;rS.chapId=null;
+  document.getElementById('rom-add-novel-btn').style.display='flex';
+  rRenderList();rRenderChaps();rRenderEditor();
+}
+function rSelChap(chapId){
+  rS.chapId=chapId;rRenderChaps();rRenderEditor();
+}
+
+// --- ADD ---
+function romShowAddColl(){
+  const list=document.getElementById('rom-list');
+  if(document.getElementById('rom-add-coll-row'))return;
+  const row=document.createElement('div');
+  row.id='rom-add-coll-row';row.className='rom-inline-row';
+  row.innerHTML=`<input class="rom-inline-inp" id="rom-coll-inp" placeholder="Nom de la collection…" maxlength="50"
+    onkeydown="if(event.key==='Enter')romOkAddColl();if(event.key==='Escape')this.parentElement.remove()">
+    <button class="ok-btn" onclick="romOkAddColl()">✓</button>
+    <button class="x-btn" onclick="document.getElementById('rom-add-coll-row').remove()">×</button>`;
+  list.appendChild(row);
+  document.getElementById('rom-coll-inp')?.focus();
+}
+function romOkAddColl(){
+  const name=document.getElementById('rom-coll-inp')?.value?.trim();
+  if(!name)return;
+  const nc={id:uid(),name,_exp:true,novels:[]};
+  rS.collections.push(nc);rS.collId=nc.id;
+  rSave();rRenderList();
+  document.getElementById('rom-add-novel-btn').style.display='flex';
+}
+function romShowAddNovel(){
+  if(!rS.collId){showToast('Sélectionne une collection d\'abord');return;}
+  const name=prompt('Titre du roman :');
+  if(!name?.trim())return;
+  const coll=rColl(rS.collId);if(!coll)return;
+  const nn={id:uid(),name:name.trim(),cover:'',synopsis:'',chapters:[]};
+  coll.novels.push(nn);rSave();
+  rSelNovel(rS.collId,nn.id);
+}
+function romAddChap(){
+  const novel=rNovel(rS.collId,rS.novelId);if(!novel)return;
+  const num=(novel.chapters||[]).length+1;
+  const name=prompt('Titre du chapitre :',`Chapitre ${num}`);
+  if(!name?.trim())return;
+  const nc={id:uid(),name:name.trim(),content:''};
+  novel.chapters.push(nc);rSave();
+  rSelChap(nc.id);rRenderChaps();
+}
+
+// --- RENAME / DELETE ---
+function rRenameColl(e,collId){
+  e.stopPropagation();
+  const c=rColl(collId);if(!c)return;
+  const name=prompt('Renommer la collection :',c.name);
+  if(name?.trim()){c.name=name.trim();rSave();rRenderList();}
+}
+function rDelColl(e,collId){
+  e.stopPropagation();
+  if(!confirm('Supprimer cette collection et tous ses romans ?'))return;
+  rS.collections=rS.collections.filter(c=>c.id!==collId);
+  if(rS.collId===collId){rS.collId=null;rS.novelId=null;rS.chapId=null;}
+  rSave();rRenderList();rRenderChaps();rRenderEditor();
+}
+function rRenameNovel(e,collId,novelId){
+  e.stopPropagation();
+  const n=rNovel(collId,novelId);if(!n)return;
+  const name=prompt('Renommer le roman :',n.name);
+  if(name?.trim()){n.name=name.trim();rSave();rRenderList();if(rS.novelId===novelId)rRenderEditor();}
+}
+function rDelNovel(e,collId,novelId){
+  e.stopPropagation();
+  if(!confirm('Supprimer ce roman et tous ses chapitres ?'))return;
+  const c=rColl(collId);if(!c)return;
+  c.novels=c.novels.filter(n=>n.id!==novelId);
+  if(rS.novelId===novelId){rS.novelId=null;rS.chapId=null;}
+  rSave();rRenderList();rRenderChaps();rRenderEditor();
+}
+function rDelChap(e,chapId){
+  e.stopPropagation();
+  if(!confirm('Supprimer ce chapitre ?'))return;
+  const novel=rNovel(rS.collId,rS.novelId);if(!novel)return;
+  novel.chapters=novel.chapters.filter(c=>c.id!==chapId);
+  if(rS.chapId===chapId)rS.chapId=null;
+  rSave();rRenderChaps();rRenderEditor();
+}
+
+// --- SAVE CONTENT ---
+let romSaveTimer;
+function romSaveChap(){
+  const ed=document.getElementById('rom-writer');
+  const ch=rChap(rS.collId,rS.novelId,rS.chapId);
+  if(!ch||!ed)return;
+  ch.content=ed.innerHTML;
+  rUpdateStats();
+  const lbl=document.getElementById('rom-autosave-label');
+  if(lbl)lbl.textContent='Enregistrement…';
+  clearTimeout(romSaveTimer);
+  romSaveTimer=setTimeout(()=>{
+    rSave();
+    const ind=document.getElementById('rom-save-ind');
+    if(ind){ind.classList.add('visible');setTimeout(()=>ind.classList.remove('visible'),2000);}
+    if(lbl)lbl.textContent='✓ Sauvegardé à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    rRenderList();
+  },600);
+}
+function romSaveSynopsis(){
+  const novel=rNovel(rS.collId,rS.novelId);
+  if(novel){novel.synopsis=document.getElementById('rom-synopsis').value;rSave();}
+}
+function romLoadCover(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const novel=rNovel(rS.collId,rS.novelId);
+    if(novel){novel.cover=ev.target.result;rSave();rRenderEditor();rRenderList();}
+  };
+  reader.readAsDataURL(file);inp.value='';
+}
+
+// --- PDF EXPORT ---
+function romOpenPdfModal(){
+  const novel=rNovel(rS.collId,rS.novelId);
+  if(!novel){showToast('Sélectionne un roman d\'abord');return;}
+  const opts=document.getElementById('rom-pdf-opts');
+  const hasChap=rS.chapId!==null;
+  opts.innerHTML=`
+    <div class="rom-pdf-row" onclick="romExportPDF('novel')">
+      <div class="rom-pdf-icon">📚</div>
+      <div><div class="rom-pdf-label">Roman complet</div>
+      <div class="rom-pdf-sub">${(novel.chapters||[]).length} chapitres · ${rNovelWC(novel).toLocaleString('fr-FR')} mots</div></div>
+    </div>
+    ${hasChap?`<div class="rom-pdf-row" onclick="romExportPDF('chapter')">
+      <div class="rom-pdf-icon">📄</div>
+      <div><div class="rom-pdf-label">Chapitre actuel seulement</div>
+      <div class="rom-pdf-sub">${esc(rChap(rS.collId,rS.novelId,rS.chapId)?.name||'')}</div></div>
+    </div>`:''}`;
+  document.getElementById('rom-pdf-overlay').classList.add('open');
+}
+function romExportPDF(mode){
+  document.getElementById('rom-pdf-overlay').classList.remove('open');
+  const novel=rNovel(rS.collId,rS.novelId);
+  const coll=rColl(rS.collId);
+  if(!novel)return;
+  let title=novel.name,bodyHtml='';
+  const toHtml=content=>{
+    if(!content)return '<p> </p>';
+    return content
+      .replace(/class="[^"]*"/g,'')
+      .replace(/contenteditable="[^"]*"/g,'')
+      .replace(/onclick="[^"]*"/g,'')
+      .replace(/data-placeholder="[^"]*"/g,'')
+      .replace(/<figure[^>]*>/g,'<figure style="text-align:center;margin:20px 0">')
+      .replace(/<figcaption[^>]*>/g,'<figcaption style="font-size:12px;color:#888;font-style:italic;margin-top:6px">')
+      .replace(/<img([^>]*)>/g,'<img$1 style="max-width:100%;border-radius:6px;display:block;margin:0 auto">');
+  };
+  if(mode==='chapter'){
+    const ch=rChap(rS.collId,rS.novelId,rS.chapId);if(!ch)return;
+    title=ch.name;
+    bodyHtml=`<h1 class="chap-title">${esc(ch.name)}</h1>${toHtml(ch.content)}`;
+  } else {
+    const coverImg=novel.cover?`<img src="${novel.cover}" style="width:160px;height:220px;object-fit:cover;border-radius:8px;margin-bottom:18px;" alt="Couverture">`:'📖';
+    const synHtml=novel.synopsis?`<div class="synopsis">${esc(novel.synopsis)}</div>`:'';
+    const chapters=(novel.chapters||[]).map((ch,i)=>`
+      <div class="chapter-break">
+        <h1 class="chap-title">${i+1}. ${esc(ch.name)}</h1>
+        ${toHtml(ch.content)}
+      </div>`).join('');
+    const toc=(novel.chapters||[]).map((ch,i)=>`<div style="padding:4px 0;border-bottom:1px dotted #DDD;font-size:13px;display:flex;justify-content:space-between"><span>${i+1}. ${esc(ch.name)}</span><span style="color:#999">${rCountWords(ch.content||'')} mots</span></div>`).join('');
+    bodyHtml=`<div class="cover-page">${coverImg}<h1 class="novel-title">${esc(novel.name)}</h1>
+      <div class="coll-sub">${esc(coll?.name||'')}</div>${synHtml}</div>
+      <div class="toc"><h2 style="font-size:16px;margin-bottom:10px;color:#555">Table des matières</h2>${toc}</div>
+      ${chapters}`;
+  }
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>${esc(title)}</title>
+  <style>body{font-family:Georgia,'Times New Roman',serif;max-width:680px;margin:0 auto;padding:40px 32px;color:#1A1814;line-height:1.9;font-size:14px;}
+  .cover-page{text-align:center;padding:40px 0 60px;page-break-after:always;}
+  .novel-title{font-size:34px;font-weight:900;margin:10px 0 6px;letter-spacing:-1px;}
+  .coll-sub{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#999;margin-bottom:16px;}
+  .synopsis{font-size:13px;color:#666;font-style:italic;max-width:440px;margin:0 auto;line-height:1.7;padding:14px;border-left:3px solid #C8860A;text-align:left;}
+  .toc{padding:30px 0;page-break-after:always;}
+  .chapter-break{page-break-before:always;padding-top:40px;}
+  .chap-title{font-size:26px;font-weight:900;color:#C8860A;margin:0 0 22px;padding-bottom:10px;border-bottom:2px solid #C8860A;}
+  p{margin:6px 0;text-indent:1.5em;}h2{font-size:18px;font-weight:700;margin:18px 0 8px;color:#333;}
+  h3{font-size:15px;font-weight:700;margin:14px 0 6px;color:#555;}
+  figure{text-align:center;margin:20px 0;}figcaption{font-size:12px;color:#888;font-style:italic;margin-top:6px;}
+  img{max-width:100%;border-radius:6px;display:block;margin:0 auto;}
+  @media print{body{margin:20px;padding:0;}.chapter-break{page-break-before:always;}}
+  </style></head><body>${bodyHtml}</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),600);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadState();
+loadTheme();
+rLoad();
+if(state.subjects.length>0)state.expanded[state.subjects[0].id]=true;
+render();
+try{if(!localStorage.getItem('studyspace-onboarded'))setTimeout(openOb,500);}catch(e){}
+</script>
+</body>
+</html>
