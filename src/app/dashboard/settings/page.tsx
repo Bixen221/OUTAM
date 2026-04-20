@@ -4,145 +4,96 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function AdminDashboard() {
-  const [isAdmin, setIsAdmin] = useState(false);
+export default function Settings() {
+  const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [restaurants, setRestaurants] = useState<any[]>([]);
-  const [dishes, setDishes] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name:'', address:'', phone:'', description:'', theme_color:'#3300FF', email:'' });
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState('');
+  const [msg, setMsg] = useState('');
   const router = useRouter();
 
-  useEffect(() => { checkAdmin(); }, []);
+  useEffect(() => { loadData(); }, []);
 
-  async function checkAdmin() {
+  async function loadData() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
-    const { data: admin } = await supabase.from('admins').select('*').eq('user_id', user.id).single();
-    if (!admin) { router.push('/dashboard'); return; }
-    setIsAdmin(true);
-    loadAll();
-  }
-
-  async function loadAll() {
-    const { data: restos } = await supabase.from('restaurants').select('*').order('created_at', { ascending: false });
-    setRestaurants(restos || []);
-    const { data: d } = await supabase.from('dishes').select('*');
-    setDishes(d || []);
+    const { data: resto } = await supabase.from('restaurants').select('*').eq('owner_id', user.id).single();
+    if (!resto) { router.push('/auth/signup'); return; }
+    setRestaurant(resto);
+    setForm({ name: resto.name||'', address: resto.address||'', phone: resto.phone||'', description: resto.description||'', theme_color: resto.theme_color||'#3300FF', email: resto.email||'' });
+    if (resto.logo_url) setLogoPreview(resto.logo_url);
     setLoading(false);
   }
 
-  async function deleteRestaurant(id: string, name: string) {
-    if (!confirm(`Supprimer le restaurant "${name}" et tous ses plats ? Cette action est irréversible.`)) return;
-    await supabase.from('dishes').delete().eq('restaurant_id', id);
-    await supabase.from('categories').delete().eq('restaurant_id', id);
-    await supabase.from('restaurants').delete().eq('id', id);
-    loadAll();
+  function handleLogo(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Image trop lourde (2 Mo max)'); return; }
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target?.result);
+    reader.readAsDataURL(file);
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Vérification des droits admin...</div>;
-  if (!isAdmin) return null;
+  async function save() {
+    setSaving(true); setMsg('');
+    let logoUrl = restaurant.logo_url || '';
+    if (logoFile) {
+      const ext = logoFile.name.split('.').pop();
+      const name = 'logo_' + restaurant.id + '_' + Date.now() + '.' + ext;
+      const { error: upErr } = await supabase.storage.from('restaurant-logos').upload(name, logoFile, { contentType: logoFile.type, upsert: true });
+      if (!upErr) { const { data } = supabase.storage.from('restaurant-logos').getPublicUrl(name); logoUrl = data.publicUrl; }
+    }
+    const { error } = await supabase.from('restaurants').update({
+      name: form.name.trim(), address: form.address.trim(), phone: form.phone.trim(),
+      description: form.description.trim(), theme_color: form.theme_color, logo_url: logoUrl,
+    }).eq('id', restaurant.id);
+    setMsg(error ? 'Erreur lors de la sauvegarde.' : 'Profil mis à jour !');
+    setSaving(false); setLogoFile(null);
+  }
 
-  const filteredRestos = restaurants.filter(r =>
-    !search || (r.name + ' ' + r.slug + ' ' + r.address).toLowerCase().includes(search.toLowerCase())
-  );
-
-  const totalDishes = dishes.length;
-  const totalRestos = restaurants.length;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Chargement...</div>;
 
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
-      {/* Admin header */}
-      <header className="bg-gray-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="font-display text-xl font-bold">Ou<span className="text-brand-300">tam</span></Link>
-            <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">Mon restaurant</Link>
-            <button onClick={async () => { await supabase.auth.signOut(); router.push('/'); }} className="text-sm text-gray-400 hover:text-red-400 transition-colors">
-              Déconnexion
-            </button>
-          </div>
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/dashboard" className="text-sm text-brand-500 font-medium hover:underline">← Dashboard</Link>
+          <span className="font-display text-xl font-bold">Ou<span className="text-brand-500">tam</span></span>
         </div>
       </header>
-
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="font-display text-3xl font-bold mb-2">Administration Outam</h1>
-        <p className="text-gray-400 mb-8">Gérez tous les restaurants de la plateforme.</p>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 text-center">
-            <div className="text-3xl font-bold text-brand-500">{totalRestos}</div>
-            <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">Restaurants</div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 text-center">
-            <div className="text-3xl font-bold text-brand-500">{totalDishes}</div>
-            <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">Plats au total</div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 text-center">
-            <div className="text-3xl font-bold text-green-500">{restaurants.filter(r => dishes.some(d => d.restaurant_id === r.id)).length}</div>
-            <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">Restos actifs</div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 text-center">
-            <div className="text-3xl font-bold text-amber-500">{restaurants.filter(r => !dishes.some(d => d.restaurant_id === r.id)).length}</div>
-            <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">Sans plats</div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="bg-white rounded-2xl p-3 border border-gray-100 mb-6 flex gap-3">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un restaurant..."
-            className="flex-1 px-4 py-2 outline-none text-sm bg-transparent"
-          />
-          {search && <button onClick={() => setSearch('')} className="text-gray-400 text-sm px-3">✕</button>}
-        </div>
-
-        {/* Restaurants list */}
-        <div className="space-y-3">
-          {filteredRestos.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <p className="text-2xl mb-2">🍽️</p>
-              <p>Aucun restaurant trouvé</p>
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <h1 className="font-display text-2xl font-bold mb-1">Profil du restaurant</h1>
+        <p className="text-gray-400 text-sm mb-6">Ces informations sont visibles sur votre menu public.</p>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 space-y-5">
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-2">Logo</label>
+            <div className="flex items-center gap-5">
+              {logoPreview ? <img src={logoPreview} alt="" className="w-20 h-20 rounded-2xl object-cover border" /> : <div className="w-20 h-20 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-500 text-2xl font-bold border border-brand-100">{form.name?.[0]?.toUpperCase()||'?'}</div>}
+              <div><label className="btn-ghost text-sm cursor-pointer inline-block">Changer<input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleLogo} /></label><p className="text-xs text-gray-400 mt-1">JPG, PNG — 2 Mo max</p></div>
             </div>
-          ) : filteredRestos.map((r) => {
-            const restoDishe = dishes.filter(d => d.restaurant_id === r.id);
-            return (
-              <div key={r.id} className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-brand-200 transition-colors">
-                <div className="flex items-center gap-4">
-                  {/* Logo */}
-                  {r.logo_url ? (
-                    <img src={r.logo_url} alt={r.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ background: (r.theme_color || '#3300FF') + '15', color: r.theme_color || '#3300FF' }}>
-                      {r.name[0]?.toUpperCase()}
-                    </div>
-                  )}
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="font-bold text-lg">{r.name}</h3>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-brand-50 text-brand-500 font-medium">{restoDishe.length} plats</span>
-                    </div>
-                    <p className="text-sm text-gray-400 truncate">{r.address || 'Pas d\'adresse'} · {r.phone || 'Pas de téléphone'}</p>
-                    <p className="text-xs text-gray-300 mt-0.5">Slug: /{r.slug} · Créé le {new Date(r.created_at).toLocaleDateString('fr-FR')}</p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Link href={`/menu/${r.slug}`} target="_blank" className="btn-ghost text-xs">Voir le menu</Link>
-                    <button onClick={() => deleteRestaurant(r.id, r.name)} className="btn-danger text-xs">Supprimer</button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          </div>
+          <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Nom du restaurant *</label><input type="text" value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} className="input-field" /></div>
+          <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Adresse</label><input type="text" value={form.address} onChange={(e) => setForm({...form, address: e.target.value})} className="input-field" placeholder="ex: Rue 10, Médina, Dakar" /></div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Téléphone</label><input type="tel" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} className="input-field" placeholder="+221 77 000 00 00" /></div>
+            <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Email</label><input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="input-field" placeholder="contact@monresto.sn" /></div>
+          </div>
+          <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Description</label><textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} className="input-field" rows={3} placeholder="Décrivez votre restaurant..." /></div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-2">Couleur du menu</label>
+            <div className="flex items-center gap-3">
+              <input type="color" value={form.theme_color} onChange={(e) => setForm({...form, theme_color: e.target.value})} className="w-10 h-10 rounded-xl border cursor-pointer p-1" />
+              <div className="flex gap-1.5">{['#3300FF','#DC2626','#16A34A','#D97706','#7C3AED','#0284C7','#0F766E','#C026D3'].map((c) => <button key={c} onClick={() => setForm({...form, theme_color: c})} className={'w-7 h-7 rounded-full border-2 transition-all ' + (form.theme_color === c ? 'border-gray-900 scale-110' : 'border-transparent')} style={{ background: c }} />)}</div>
+            </div>
+          </div>
+          {msg && <p className={'text-sm p-3 rounded-xl ' + (msg.includes('Erreur') ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600')}>{msg}</p>}
+          <div className="flex gap-3">
+            <button onClick={save} disabled={saving} className="btn-primary disabled:opacity-50">{saving ? 'Enregistrement...' : 'Enregistrer'}</button>
+            <Link href="/dashboard" className="btn-ghost text-sm flex items-center">Annuler</Link>
+          </div>
         </div>
       </div>
     </div>
