@@ -30,7 +30,7 @@ export default function Login() {
     if (!resetEmail.trim()) { setError('Entrez votre email.'); return; }
     setResetLoading(true);
     setError('');
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), { redirectTo: window.location.origin + '/auth/login' });
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), { redirectTo: window.location.origin + '/auth/reset' });
     if (error) { setError(error.message); setResetLoading(false); return; }
     setResetSent(true);
     setResetLoading(false);
