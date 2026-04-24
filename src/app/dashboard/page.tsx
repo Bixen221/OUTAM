@@ -106,7 +106,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#FAFAF8]">
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl font-bold"><img src="/icon.png" alt="Outam" className="h-8 w-auto" /></Link>
+          <Link href="/" className="font-display text-xl font-bold"><img src="/icon.png" alt="Outam" className="h-10 w-auto" /></Link>
           <div className="flex items-center gap-2">
             <Link href="/dashboard/settings" className="btn-ghost text-xs">Profil</Link>
             <Link href={'/menu/' + restaurant?.slug} target="_blank" className="btn-ghost text-xs">Mon menu</Link>

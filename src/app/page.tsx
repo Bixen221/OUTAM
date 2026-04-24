@@ -8,7 +8,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-[#FAFAF8]/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
           <Link href="/" className="font-display text-2xl font-bold text-gray-900">
-            <img src="/icon.png" alt="Outam" className="h-8 w-auto" />
+            <img src="/icon.png" alt="Outam" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/auth/login" className="btn-ghost text-sm">Connexion</Link>

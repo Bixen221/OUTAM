@@ -59,7 +59,7 @@ export default function AdminDashboard() {
       <header className="bg-gray-900 text-white">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="font-display text-xl font-bold"><img src="/icon.png" alt="Outam" className="h-8 w-auto" /></Link>
+            <Link href="/" className="font-display text-xl font-bold"><img src="/icon.png" alt="Outam" className="h-10 w-auto" /></Link>
             <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">ADMIN</span>
           </div>
           <div className="flex items-center gap-3">
