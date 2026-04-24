@@ -33,7 +33,7 @@ export default function Settings() {
     if (file.size > 2 * 1024 * 1024) { alert('Image trop lourde (2 Mo max)'); return; }
     setLogoFile(file);
     const reader = new FileReader();
-    reader.onload = (ev) => setLogoPreview(ev.target?.result);
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
   }
 
