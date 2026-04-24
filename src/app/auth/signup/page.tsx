@@ -60,7 +60,7 @@ export default function SignUp() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#FAFAF8]">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display text-3xl font-bold text-gray-900">Ou<span className="text-brand-500">tam</span></Link>
+          <Link href="/" className="font-display text-3xl font-bold text-gray-900"><img src="/logo.png" alt="Outam" className="h-12 w-auto mx-auto" /></Link>
           <p className="text-gray-500 mt-2">Creez le menu digital de votre restaurant</p>
         </div>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">

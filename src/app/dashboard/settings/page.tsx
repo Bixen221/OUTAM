@@ -61,7 +61,7 @@ export default function Settings() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="text-sm text-brand-500 font-medium hover:underline">← Dashboard</Link>
-          <span className="font-display text-xl font-bold">Ou<span className="text-brand-500">tam</span></span>
+          <span className="font-display text-xl font-bold"><img src="/icon.png" alt="Outam" className="h-8 w-auto" /></span>
         </div>
       </header>
       <div className="max-w-3xl mx-auto px-4 py-8">
