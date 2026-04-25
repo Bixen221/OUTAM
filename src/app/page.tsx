@@ -12,7 +12,7 @@ export default function Home() {
   function submitDemo(e) {
     e.preventDefault();
     const msg = encodeURIComponent('Bonjour, je souhaite une demo Outam.\n\nRestaurant: ' + demoForm.name + '\nAdresse: ' + demoForm.address + '\nTelephone: ' + demoForm.phone + '\nDate souhaitee: ' + demoForm.date + '\nHeure: ' + demoForm.time);
-    window.open('https://wa.me/221770000000?text=' + msg, '_blank');
+    window.open('https://wa.me/221766196090?text=' + msg, '_blank');
     setDemoSent(true);
   }
 
