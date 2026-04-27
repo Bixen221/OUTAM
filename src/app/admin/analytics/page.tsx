@@ -36,15 +36,15 @@ export default function AdminAnalytics() {
   const now = new Date();
   const today = now.toISOString().split('T')[0];
   const scansToday = scans.filter(s => s.scanned_at >= today).length;
-  const weekAgo = new Date(now - 7 * 86400000).toISOString().split('T')[0];
+  const weekAgo = new Date(now.getTime() - 7 * 86400000).toISOString().split('T')[0];
   const scansWeek = scans.filter(s => s.scanned_at >= weekAgo).length;
-  const monthAgo = new Date(now - 30 * 86400000).toISOString().split('T')[0];
+  const monthAgo = new Date(now.getTime() - 30 * 86400000).toISOString().split('T')[0];
   const scansMonth = scans.filter(s => s.scanned_at >= monthAgo).length;
 
   const days = parseInt(period);
   const dailyData = [];
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now - i * 86400000);
+    const d = new Date(now.getTime() - i * 86400000);
     const key = d.toISOString().split('T')[0];
     const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
     const count = scans.filter(s => s.scanned_at?.startsWith(key)).length;
