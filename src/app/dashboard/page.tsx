@@ -108,7 +108,11 @@ export default function Dashboard() {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="font-display text-xl font-bold"><img src="/icon.png" alt="Outam" className="h-10 w-auto" /></Link>
           <div className="flex items-center gap-2">
-            <Link href="/dashboard/settings" className="btn-ghost text-xs">Profil</Link>
+            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 mr-2">
+              <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-900 shadow-sm">Menu</span>
+              <Link href="/dashboard/analytics" className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900">Analytics</Link>
+              <Link href="/dashboard/settings" className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900">Profil</Link>
+            </div>
             <Link href={'/menu/' + restaurant?.slug} target="_blank" className="btn-ghost text-xs">Mon menu</Link>
             <button onClick={logout} className="text-xs text-gray-400 hover:text-red-500">Déconnexion</button>
           </div>
