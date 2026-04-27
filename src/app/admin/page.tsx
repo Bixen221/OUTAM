@@ -63,8 +63,10 @@ export default function AdminDashboard() {
             <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">ADMIN</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">Mon resto</Link>
-            <button onClick={async () => { await supabase.auth.signOut(); router.push('/'); }} className="text-sm text-gray-400 hover:text-red-400">Deconnexion</button>
+            <div className="flex items-center gap-1 bg-white/10 rounded-full p-1">
+              <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-white text-gray-900 shadow-sm">Restaurants</span>
+              <Link href="/admin/analytics" className="px-4 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white transition-colors">Analytics</Link>
+            </div>
           </div>
         </div>
       </header>
