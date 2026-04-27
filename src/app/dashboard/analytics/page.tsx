@@ -66,9 +66,9 @@ export default function Analytics() {
   const peakHour = hourlyData.indexOf(Math.max(...hourlyData));
 
   // Top dishes (by category)
-  const dishViews = {};
+  const dishViews: Record<number, any> = {};
   dishes.forEach(d => { dishViews[d.id] = { ...d, views: Math.floor(Math.random() * scans.length * 0.3) + 1 }; });
-  const sortedDishes = Object.values(dishViews).sort((a, b) => b.views - a.views);
+  const sortedDishes: any[] = Object.values(dishViews).sort((a: any, b: any) => b.views - a.views);
 
   // Growth
   const prevWeek = scans.filter(s => s.scanned_at >= new Date(now.getTime() - 14 * 86400000).toISOString().split('T')[0] && s.scanned_at < weekAgo).length;
