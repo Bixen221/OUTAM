@@ -106,11 +106,17 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#FAFAF8]">
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl font-bold">Ou<span className="text-brand-500">tam</span></Link>
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <img src="/icon.png" alt="Outam" className="h-9 w-auto" />
+          </Link>
           <div className="flex items-center gap-2">
-            <Link href="/dashboard/settings" className="btn-ghost text-xs">Profil</Link>
-            <Link href={'/menu/' + restaurant?.slug} target="_blank" className="btn-ghost text-xs">Mon menu</Link>
-            <button onClick={logout} className="text-xs text-gray-400 hover:text-red-500">Déconnexion</button>
+            <div className="flex items-center gap-0.5 bg-gray-100 rounded-full p-1">
+              <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-900 shadow-sm">Menu</span>
+              <Link href="/dashboard/analytics" className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900">Analytics</Link>
+              <Link href="/dashboard/settings" className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900">Profil</Link>
+            </div>
+            <Link href={'/menu/' + restaurant?.slug} target="_blank" className="btn-ghost text-xs hidden sm:inline-flex">Mon menu</Link>
+            <button onClick={logout} className="text-xs text-gray-400 hover:text-red-500">Sortir</button>
           </div>
         </div>
       </header>
