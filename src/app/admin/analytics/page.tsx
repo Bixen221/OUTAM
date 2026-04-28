@@ -85,7 +85,7 @@ export default function AdminAnalytics() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Analytics globales</h1>
+            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>Analytics globales</h1>
             <p className="text-gray-400 text-sm mt-0.5">Statistiques de toute la plateforme Outam</p>
           </div>
           <select value={period} onChange={(e) => setPeriod(e.target.value)} className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none">

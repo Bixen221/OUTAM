@@ -81,7 +81,7 @@ export default function Analytics() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/icon.png" alt="Outam" className="h-9 w-auto" />
-            <span className="font-bold text-lg tracking-wide hidden sm:inline" style={{ fontFamily: "'Playfair Display', serif" }}>OUT<span style={{ color: '#E0CD57' }}>AM</span></span>
+            <span className="font-bold text-lg tracking-wide hidden sm:inline" style={{ fontFamily: "'Montserrat', sans-serif" }}>OUT<span style={{ color: '#E0CD57' }}>AM</span></span>
           </Link>
           <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
             <Link href="/dashboard" className="px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Menu</Link>
@@ -94,7 +94,7 @@ export default function Analytics() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Analytics</h1>
+            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>Analytics</h1>
             <p className="text-gray-400 text-sm mt-0.5">{restaurant?.name} — Statistiques de votre menu</p>
           </div>
           <select value={period} onChange={(e) => setPeriod(e.target.value)} className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-gray-400">

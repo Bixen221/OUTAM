@@ -17,7 +17,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+    <div className="min-h-screen bg-[#0A0A0A] text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
       <style jsx global>{`
         @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
@@ -54,7 +54,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <img src="/icon.png" alt="Outam" className="h-9 w-auto" />
-            <span className="font-bold text-lg tracking-wide hidden sm:block" style={{ fontFamily: "'Playfair Display', serif" }}>OUT<span className="gold-text">AM</span></span>
+            <span className="font-bold text-lg tracking-wide hidden sm:block" style={{ fontFamily: "'Montserrat', sans-serif" }}>OUT<span className="gold-text">AM</span></span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/auth/login" className="btn-outline rounded-full px-5 py-2 text-sm">Connexion</Link>
@@ -78,7 +78,7 @@ export default function Home() {
                   <span className="text-xs gold-text font-medium tracking-wider uppercase">Gratuit pour toujours</span>
                 </div>
               </div>
-              <h1 className={`text-4xl md:text-6xl font-bold leading-[1.1] mb-5 ${visible ? 'fade-up fade-up-d2' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
+              <h1 className={`text-4xl md:text-6xl font-bold leading-[1.1] mb-5 ${visible ? 'fade-up fade-up-d2' : 'opacity-0'}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 Le menu digital<br />
                 <span className="gold-gradient">premium</span> pour<br />
                 votre restaurant
@@ -141,7 +141,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-5">
           <div className="text-center mb-16">
             <p className="text-xs gold-text font-semibold tracking-[0.2em] uppercase mb-3">Simple et rapide</p>
-            <h2 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Comment ca <span className="gold-gradient">marche</span> ?</h2>
+            <h2 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>Comment ca <span className="gold-gradient">marche</span> ?</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -169,7 +169,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-5">
           <div className="text-center mb-16">
             <p className="text-xs gold-text font-semibold tracking-[0.2em] uppercase mb-3">Fonctionnalites</p>
-            <h2 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Tout ce qu il <span className="gold-gradient">vous faut</span></h2>
+            <h2 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>Tout ce qu il <span className="gold-gradient">vous faut</span></h2>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
             {[
@@ -195,7 +195,7 @@ export default function Home() {
       <section className="py-20 md:py-28">
         <div className="max-w-4xl mx-auto px-5 text-center">
           <p className="text-xs gold-text font-semibold tracking-[0.2em] uppercase mb-3">Ils nous font confiance</p>
-          <h2 className="text-3xl md:text-4xl font-bold mb-12" style={{ fontFamily: "'Playfair Display', serif" }}>Les restaurants <span className="gold-gradient">senegalais</span> adoptent Outam</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-12" style={{ fontFamily: "'Montserrat', sans-serif" }}>Les restaurants <span className="gold-gradient">senegalais</span> adoptent Outam</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { name: 'Chez Fatou', loc: 'Medina, Dakar', quote: 'Mes clients adorent scanner le QR code. Plus besoin de menus papier.' },
@@ -222,7 +222,7 @@ export default function Home() {
         <div className="absolute inset-0"><div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(224,205,87,0.06) 0%, transparent 70%)' }} /></div>
         <div className="relative max-w-3xl mx-auto px-5 text-center">
           <img src="/icon.png" alt="Outam" className="h-16 w-auto mx-auto mb-6" style={{ filter: 'drop-shadow(0 0 20px rgba(224,205,87,0.3))' }} />
-          <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Pret a <span className="gold-gradient">digitaliser</span><br />votre menu ?</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>Pret a <span className="gold-gradient">digitaliser</span><br />votre menu ?</h2>
           <p className="text-gray-500 text-lg mb-8 max-w-md mx-auto">Rejoignez les restaurants senegalais qui utilisent Outam. C est gratuit, pour toujours.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/auth/signup" className="btn-gold rounded-full px-10 py-4 text-base inline-block text-center">Commencer maintenant</Link>
@@ -236,7 +236,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src="/icon.png" alt="Outam" className="h-8 w-auto" />
-            <span className="font-bold tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>OUT<span className="gold-text">AM</span></span>
+            <span className="font-bold tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>OUT<span className="gold-text">AM</span></span>
             <span className="text-gray-600 text-sm ml-2">Menus digitaux pour restaurants</span>
           </div>
           <p className="text-gray-600 text-xs">Fait par Babacar &middot; 2026</p>
@@ -250,7 +250,7 @@ export default function Home() {
             {demoSent ? (
               <div className="text-center">
                 <div className="text-4xl mb-4">✅</div>
-                <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>Demande envoyee !</h3>
+                <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>Demande envoyee !</h3>
                 <p className="text-gray-400 text-sm mb-6">Nous vous contacterons pour planifier votre demo. Merci de votre interet pour Outam.</p>
                 <button onClick={() => { setShowDemo(false); setDemoSent(false); setDemoForm({ name:'', address:'', phone:'', date:'', time:'' }); }} className="btn-gold rounded-full px-8 py-3 text-sm">Fermer</button>
               </div>
@@ -258,7 +258,7 @@ export default function Home() {
               <>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="font-bold text-xl" style={{ fontFamily: "'Playfair Display', serif" }}>Demander une <span className="gold-text">demo</span></h3>
+                    <h3 className="font-bold text-xl" style={{ fontFamily: "'Montserrat', sans-serif" }}>Demander une <span className="gold-text">demo</span></h3>
                     <p className="text-gray-500 text-xs mt-1">Remplissez ce formulaire et nous vous contacterons</p>
                   </div>
                   <button onClick={() => setShowDemo(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-white" style={{ background: 'rgba(255,255,255,0.05)' }}>&times;</button>
