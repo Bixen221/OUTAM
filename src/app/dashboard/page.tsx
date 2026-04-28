@@ -55,7 +55,7 @@ export default function Dashboard() {
     await new Promise(r => { qrImg.onload = r; });
     ctx.drawImage(qrImg, 0, 0, 512, 512);
     const logo = new Image();
-    logo.src = '/icon.png';
+    logo.src = '/logo.png';
     await new Promise(r => { logo.onload = r; logo.onerror = r; });
     const logoSize = 80;
     const x = (512 - logoSize) / 2;
