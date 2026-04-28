@@ -72,11 +72,11 @@ export default function Dashboard() {
     if (!newCatName.trim() || !restaurant) return;
     setSaving(true);
     await supabase.from('categories').insert({ restaurant_id: restaurant.id, name: newCatName.trim(), sort_order: categories.length });
-    setNewCatName(''); setShowAddCat(false); setSaving(false); loadData();
+    setNewCatName(''); setShowAddCat(false); setSaving(false); loadData(); showToast('Categorie ajoutee');
   }
   async function deleteCategory(id) {
     if (!confirm('Supprimer cette catégorie et tous ses plats ?')) return;
-    await supabase.from('categories').delete().eq('id', id); loadData();
+    await supabase.from('categories').delete().eq('id', id); loadData(); showToast('Categorie supprimee');
   }
   async function uploadImage(file) {
     const ext = file.name.split('.').pop();
@@ -100,11 +100,11 @@ export default function Dashboard() {
     if (editDish) { await supabase.from('dishes').update(data).eq('id', editDish.id); }
     else { await supabase.from('dishes').insert({ ...data, sort_order: dishes.length }); }
     setDishForm({ name:'', price:'', description:'', category_id:'', image:null, promo_price:'', promo_expires_at:'' });
-    setShowAddDish(false); setEditDish(null); setSaving(false); loadData();
+    setShowAddDish(false); setEditDish(null); setSaving(false); loadData(); showToast(editDish ? 'Plat modifie' : 'Plat ajoute');
   }
-  async function toggleDish(id, available) { await supabase.from('dishes').update({ is_available: !available }).eq('id', id); loadData(); }
-  async function deleteDish(id) { if (!confirm('Supprimer ce plat ?')) return; await supabase.from('dishes').delete().eq('id', id); loadData(); }
-  async function removePromo(id) { await supabase.from('dishes').update({ promo_price: null, promo_expires_at: null }).eq('id', id); loadData(); }
+  async function toggleDish(id, available) { await supabase.from('dishes').update({ is_available: !available }).eq('id', id); loadData(); showToast(available ? 'Plat marque epuise' : 'Plat remis disponible'); }
+  async function deleteDish(id) { if (!confirm('Supprimer ce plat ?')) return; await supabase.from('dishes').delete().eq('id', id); loadData(); showToast('Plat supprime'); }
+  async function removePromo(id) { await supabase.from('dishes').update({ promo_price: null, promo_expires_at: null }).eq('id', id); loadData(); showToast('Promotion retiree'); }
 
   function openEditDish(dish) {
     setEditDish(dish);
@@ -117,6 +117,16 @@ export default function Dashboard() {
     setShowAddDish(true);
   }
   async function logout() { await supabase.auth.signOut(); router.push('/'); }
+
+  function showToast(msg, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) { container = document.createElement('div'); container.id = 'toast-container'; container.className = 'toast-container'; document.body.appendChild(container); }
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : 'ℹ ') + msg;
+    container.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Chargement...</div>;
   const menuUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant?.slug;

@@ -37,6 +37,16 @@ export default function Settings() {
     reader.readAsDataURL(file);
   }
 
+  function showToast(msg, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) { container = document.createElement('div'); container.id = 'toast-container'; container.className = 'toast-container'; document.body.appendChild(container); }
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
+    container.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
   async function save() {
     setSaving(true); setMsg('');
     let logoUrl = restaurant.logo_url || '';
