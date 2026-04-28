@@ -18,8 +18,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
-        display: ['Playfair Display', 'serif'],
+        sans: ['Inter', 'sans-serif'],
+        display: ['Montserrat', 'sans-serif'],
       },
     },
   },

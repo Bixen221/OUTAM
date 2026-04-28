@@ -44,7 +44,7 @@ export default function Home() {
         .section-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(224,205,87,0.2), transparent); }
         .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-box { background: #111; border: 1px solid rgba(224,205,87,0.2); border-radius: 1.5rem; width: 100%; max-width: 480px; padding: 2rem; animation: fadeUp 0.3s ease; }
-        .input-dark { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(224,205,87,0.15); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #fff; font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .input-dark { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(224,205,87,0.15); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
         .input-dark:focus { border-color: #E0CD57; }
         .input-dark::placeholder { color: rgba(255,255,255,0.25); }
       `}</style>
