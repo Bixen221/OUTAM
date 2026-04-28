@@ -44,7 +44,27 @@ export default function Dashboard() {
   async function generateQR(slug) {
     const QRCode = (await import('qrcode')).default;
     const menuUrl = window.location.origin + '/menu/' + slug;
-    const url = await QRCode.toDataURL(menuUrl, { width: 512, margin: 2, color: { dark: '#1A1917', light: '#FFFFFF' } });
+    const qrDataUrl = await QRCode.toDataURL(menuUrl, { width: 512, margin: 2, color: { dark: '#1A1917', light: '#FFFFFF' } });
+    // Add logo overlay
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    const qrImg = new Image();
+    qrImg.src = qrDataUrl;
+    await new Promise(r => { qrImg.onload = r; });
+    ctx.drawImage(qrImg, 0, 0, 512, 512);
+    const logo = new Image();
+    logo.src = '/icon.png';
+    await new Promise(r => { logo.onload = r; logo.onerror = r; });
+    const logoSize = 80;
+    const x = (512 - logoSize) / 2;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(256, 256, logoSize / 2 + 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.drawImage(logo, x, x, logoSize, logoSize);
+    const url = canvas.toDataURL('image/png');
     setQrUrl(url);
   }
 
