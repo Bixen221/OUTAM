@@ -78,6 +78,25 @@ export default function Dashboard() {
     if (!confirm('Supprimer cette catégorie et tous ses plats ?')) return;
     await supabase.from('categories').delete().eq('id', id); loadData(); showToast('Categorie supprimee');
   }
+  async function compressImage(file, maxWidth = 1200, quality = 0.8) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = (maxWidth / w) * h; w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', quality);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function uploadImage(file) {
     const ext = file.name.split('.').pop();
     const name = Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
@@ -90,7 +109,7 @@ export default function Dashboard() {
     if (!dishForm.name.trim() || !dishForm.price || !dishForm.category_id) { alert('Remplissez le nom, le prix et la catégorie.'); return; }
     setSaving(true);
     let imageUrl = editDish?.image_url || '';
-    if (dishForm.image) { imageUrl = await uploadImage(dishForm.image); }
+    if (dishForm.image) { const compressed = await compressImage(dishForm.image); imageUrl = await uploadImage(compressed); }
     const data = {
       name: dishForm.name.trim(), price: parseInt(dishForm.price), description: dishForm.description.trim(),
       category_id: parseInt(dishForm.category_id), restaurant_id: restaurant.id, image_url: imageUrl,
@@ -128,7 +147,19 @@ export default function Dashboard() {
     setTimeout(() => t.remove(), 3000);
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Chargement...</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-[#FAFAFA]">
+      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 h-14" />
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 h-20 animate-pulse"><div className="h-6 bg-gray-100 rounded w-16 mx-auto mb-2" /><div className="h-3 bg-gray-100 rounded w-12 mx-auto" /></div>)}
+        </div>
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 h-24 animate-pulse"><div className="flex items-center gap-4"><div className="w-14 h-14 rounded-xl bg-gray-100" /><div className="flex-1"><div className="h-5 bg-gray-100 rounded w-40 mb-2" /><div className="h-3 bg-gray-100 rounded w-60" /></div></div></div>
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 h-48 animate-pulse" />
+        {[1,2,3].map(i => <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 h-20 animate-pulse" />)}
+      </div>
+    </div>
+  );
   const menuUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant?.slug;
   function isPromoActive(dish) { return dish.promo_price && (!dish.promo_expires_at || new Date(dish.promo_expires_at) > new Date()); }
 
@@ -157,6 +188,33 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl p-4 border border-gray-100 text-center"><div className="text-2xl font-bold text-green-500">{scansCount}</div><div className="text-xs text-gray-400 mt-0.5">Scans total</div></div>
           <div className="bg-white rounded-2xl p-4 border border-gray-100 text-center"><div className="text-2xl font-bold text-amber-500">{scansToday}</div><div className="text-xs text-gray-400 mt-0.5">Aujourd&apos;hui</div></div>
         </div>
+        {/* Onboarding guide */}
+        {(categories.length === 0 || dishes.length === 0 || !restaurant?.logo_url) && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200">
+            <h2 className="font-bold text-base mb-1">Bienvenue sur Outam !</h2>
+            <p className="text-sm text-gray-500 mb-4">Suivez ces etapes pour configurer votre menu digital.</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className={'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ' + (restaurant?.logo_url ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-400')}>{restaurant?.logo_url ? '✓' : '1'}</div>
+                <span className={'text-sm ' + (restaurant?.logo_url ? 'line-through text-gray-400' : 'text-gray-700 font-medium')}>Ajoutez votre logo et informations</span>
+                {!restaurant?.logo_url && <Link href="/dashboard/settings" className="text-xs text-amber-600 font-medium hover:underline ml-auto">Configurer</Link>}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className={'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ' + (categories.length > 0 ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-400')}>{categories.length > 0 ? '✓' : '2'}</div>
+                <span className={'text-sm ' + (categories.length > 0 ? 'line-through text-gray-400' : 'text-gray-700 font-medium')}>Creez vos categories (Entrees, Plats, Boissons...)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className={'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ' + (dishes.length > 0 ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-400')}>{dishes.length > 0 ? '✓' : '3'}</div>
+                <span className={'text-sm ' + (dishes.length > 0 ? 'line-through text-gray-400' : 'text-gray-700 font-medium')}>Ajoutez vos plats avec photos et prix</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className={'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ' + (scansCount > 0 ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-400')}>{scansCount > 0 ? '✓' : '4'}</div>
+                <span className={'text-sm ' + (scansCount > 0 ? 'line-through text-gray-400' : 'text-gray-700 font-medium')}>Partagez votre QR code et recevez vos premiers clients</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl p-5 border border-gray-100">
           <div className="flex items-center gap-4">
             {restaurant?.logo_url ? <img src={restaurant.logo_url} alt="" className="w-14 h-14 rounded-xl object-cover" /> : <div className="w-14 h-14 rounded-xl bg-brand-50 flex items-center justify-center text-brand-500 text-xl font-bold">{restaurant?.name?.[0]}</div>}
