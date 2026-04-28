@@ -18,9 +18,22 @@ export default function MenuPage() {
   const [cart, setCart] = useState<Record<number, number>>({});
   const [showCart, setShowCart] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { loadMenu(); }, [slug]);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    setIsOffline(!navigator.onLine);
+    return () => { window.removeEventListener('offline', goOffline); window.removeEventListener('online', goOnline); };
+  }, []);
 
   async function loadMenu() {
     const { data: resto } = await supabase.from('restaurants').select('*').eq('slug', slug).single();
@@ -173,6 +186,13 @@ export default function MenuPage() {
           {restaurant?.phone && <p className="text-white/50 text-xs mt-1">📞 {restaurant.phone}</p>}
         </div>
       </div>
+
+      {/* Offline banner */}
+      {isOffline && (
+        <div style={{ background: '#92400E', color: '#fff', textAlign: 'center', padding: '8px', fontSize: '13px', fontWeight: 500 }}>
+          📴 Mode hors-ligne — les donnees affichees peuvent ne pas etre a jour
+        </div>
+      )}
 
       {/* Search */}
       <div className="max-w-lg mx-auto px-4 -mt-5 relative z-10">
