@@ -64,7 +64,7 @@ export default function SignUp() {
           <p className="text-gray-500 mt-2">Creez le menu digital de votre restaurant</p>
         </div>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-          <Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"14px",color:"#9CA3AF",marginBottom:"16px"}}>← Retour</Link>
+          <div style={{marginBottom:"16px"}}><Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"14px",color:"#9CA3AF"}}>← Retour</Link></div>
           <h2 className="font-display text-xl font-bold mb-6">Creer un compte</h2>
           <form onSubmit={handleSignUp} className="space-y-4">
             <div>

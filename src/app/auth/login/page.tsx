@@ -75,7 +75,7 @@ export default function Login() {
           <p className="text-gray-500 mt-2">Connectez-vous a votre restaurant</p>
         </div>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-          <Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"14px",color:"#9CA3AF",marginBottom:"16px"}}>← Retour</Link>
+          <div style={{marginBottom:"16px"}}><Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"14px",color:"#9CA3AF"}}>← Retour</Link></div>
           <h2 className="font-display text-xl font-bold mb-6">Connexion</h2>
           <form onSubmit={handleLogin} className="space-y-4">
             <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" className="input-field" required /></div>
