@@ -63,9 +63,8 @@ export default function SignUp() {
           <Link href="/" className="font-display text-3xl font-bold text-gray-900"><Link href="/"><img src="/logo.png" alt="Outam" className="h-20 w-auto mx-auto cursor-pointer" /></Link></Link>
           <p className="text-gray-500 mt-2">Creez le menu digital de votre restaurant</p>
         </div>
-        <Link href="/" className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors"><span>←</span> Retour a l accueil</Link>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-          <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors"><span>←</span> Retour a l accueil</Link>
+          <Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"14px",color:"#9CA3AF",marginBottom:"16px"}}>← Retour</Link>
           <h2 className="font-display text-xl font-bold mb-6">Creer un compte</h2>
           <form onSubmit={handleSignUp} className="space-y-4">
             <div>

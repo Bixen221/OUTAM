@@ -74,10 +74,8 @@ export default function Login() {
           <Link href="/" className="font-display text-3xl font-bold text-gray-900"><Link href="/"><img src="/logo.png" alt="Outam" className="h-20 w-auto mx-auto cursor-pointer" /></Link></Link>
           <p className="text-gray-500 mt-2">Connectez-vous a votre restaurant</p>
         </div>
-        <Link href="/" className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors"><span>←</span> Retour a l accueil</Link>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-          <div className="mb-4"><Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors">← Retour</Link></div>
-          <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors"><span>←</span> Retour a l accueil</Link>
+          <Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"14px",color:"#9CA3AF",marginBottom:"16px"}}>← Retour</Link>
           <h2 className="font-display text-xl font-bold mb-6">Connexion</h2>
           <form onSubmit={handleLogin} className="space-y-4">
             <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1.5">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" className="input-field" required /></div>
