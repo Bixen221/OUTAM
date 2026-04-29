@@ -65,6 +65,7 @@ export default function SignUp() {
         </div>
         <Link href="/" className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors"><span>←</span> Retour a l accueil</Link>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+          <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors"><span>←</span> Retour a l accueil</Link>
           <h2 className="font-display text-xl font-bold mb-6">Creer un compte</h2>
           <form onSubmit={handleSignUp} className="space-y-4">
             <div>
