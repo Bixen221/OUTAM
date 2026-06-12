@@ -73,7 +73,7 @@ export default function Login() {
         <div className="text-center mb-8">
           <Link href="/" className="font-display text-3xl font-bold text-gray-900"><Link href="/"><img src="/logo.png" alt="Outam" className="h-20 w-auto mx-auto cursor-pointer" /></Link></Link>
           <p className="text-gray-500 mt-2">Connectez-vous a votre restaurant</p>
-          <Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"8px",fontSize:"14px",color:"#6B7280",marginTop:"12px"}}>&#8592; Retour a l accueil</Link>
+          <Link href="/" style={{display:"inline-flex",alignItems:"center",gap:"8px",fontSize:"14px",color:"#374151",marginTop:"12px",textDecoration:"underline"}}>Retour a l accueil</Link>
         </div>
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                     <h2 className="font-display text-xl font-bold mb-6">Connexion</h2>
