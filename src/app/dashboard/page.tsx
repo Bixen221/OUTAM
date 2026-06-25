@@ -91,7 +91,7 @@ export default function Dashboard() {
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
           canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', quality);
         };
-        img.src = e.target.result;
+        img.src = e.target.result as string;
       };
       reader.readAsDataURL(file);
     });
