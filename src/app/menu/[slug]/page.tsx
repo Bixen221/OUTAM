@@ -182,7 +182,7 @@ export default function MenuPage() {
 
       {/* Categories */}
       {categories.length > 1 && (
-        <div style={{ maxWidth: 500, margin: '16px auto 0', padding: '0 16px' }}>
+        <div style={{ maxWidth: 500, margin: '16px auto 0', padding: '8px 16px', position: 'sticky', top: 0, zIndex: 30, background: BG, transition: 'background 0.4s' }}>
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' as any }}>
             <button onClick={() => setActiveCategory(null)} style={{ padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as any, fontFamily: "'Inter',sans-serif", background: !activeCategory ? G : INPUTBG, color: !activeCategory ? '#0A0A0A' : TX3, transition: 'all 0.2s' }}>Tout</button>
             {categories.map(cat => (
