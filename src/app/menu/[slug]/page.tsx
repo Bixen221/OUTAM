@@ -254,7 +254,7 @@ export default function MenuPage() {
                     {/* Photo */}
                     {dish.image_url ? (
                       <div onClick={() => setSelectedDish(dish)} style={{ cursor: 'pointer', position: 'relative' }}>
-                        <img src={dish.image_url} alt="" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+                        <img src={dish.image_url} alt="" style={{ width: '100%', height: 180, objectFit: 'contain', display: 'block', background: '#111' }} />
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }} />
                         {pa && <div className="promo-badge" style={{ position: 'absolute', top: 10, right: 10 }}>PROMO</div>}
                         {inCart > 0 && <div style={{ position: 'absolute', top: 10, left: 10, width: 24, height: 24, borderRadius: '50%', background: gold, color: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{inCart}</div>}
@@ -306,7 +306,7 @@ export default function MenuPage() {
       {selectedDish && (
         <div className="modal-overlay" onClick={() => setSelectedDish(null)}>
           <div className="modal-box" onClick={(e: any) => e.stopPropagation()}>
-            {selectedDish.image_url && <img src={selectedDish.image_url} alt="" style={{ width: '100%', height: 240, objectFit: 'cover' }} />}
+            {selectedDish.image_url && <img src={selectedDish.image_url} alt="" style={{ width: '100%', height: 240, objectFit: 'contain', background: '#111' }} />}
             <div style={{ padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 22, fontWeight: 700, flex: 1 }}>{selectedDish.name}</h2>
