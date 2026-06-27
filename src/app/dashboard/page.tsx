@@ -74,7 +74,7 @@ export default function Dashboard() {
     ctx.fillStyle = '#1A1917'; ctx.font = 'bold 28px Arial, sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(restaurant?.name || 'Restaurant', W / 2, 58);
     // Subtitle
-    ctx.fillStyle = clr; ctx.font = '500 13px Arial, sans-serif';
+    ctx.fillStyle = '#1A1917'; ctx.font = '500 13px Arial, sans-serif';
     ctx.fillText('SCANNEZ POUR VOIR LE MENU', W / 2, 80);
     // Decorative lines + diamond
     ctx.strokeStyle = clr + '50'; ctx.lineWidth = 0.8;
@@ -97,20 +97,18 @@ export default function Dashboard() {
     // Logo on QR
     const logo = new Image(); logo.src = '/logo.png';
     await new Promise(r => { logo.onload = r; logo.onerror = r; });
-    const lS = 60, lX = (W - lS) / 2, lY = qY + (qS - lS) / 2;
+    const lS = 90, lX = (W - lS) / 2, lY = qY + (qS - lS) / 2;
     ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath(); ctx.arc(W / 2, lY + lS / 2, lS / 2 + 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W / 2, lY + lS / 2, lS / 2 + 8, 0, Math.PI * 2); ctx.fill();
     ctx.drawImage(logo, lX, lY, lS, lS);
     // Address + phone
-    ctx.fillStyle = '#6B7280'; ctx.font = '12px Arial, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#1A1917'; ctx.font = '12px Arial, sans-serif'; ctx.textAlign = 'center';
     if (restaurant?.address) ctx.fillText(restaurant.address, W / 2, qY + qS + 28);
     if (restaurant?.phone) ctx.fillText(restaurant.phone, W / 2, qY + qS + 46);
-    // URL
-    ctx.fillStyle = clr; ctx.font = 'bold 13px Arial, sans-serif';
-    ctx.fillText(menuUrl.replace('https://', ''), W / 2, H - 50);
+
     // Powered by
-    ctx.fillStyle = '#9CA3AF'; ctx.font = '10px Arial, sans-serif';
-    ctx.fillText('Propulse par Outam', W / 2, H - 28);
+    ctx.fillStyle = '#1A1917'; ctx.font = 'bold 11px Arial, sans-serif';
+    ctx.fillText('Propulse par Outam', W / 2, H - 30);
     const url = canvas.toDataURL('image/png');
     setQrUrl(url);
   }
