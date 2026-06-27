@@ -20,6 +20,7 @@ export default function MenuPage() {
   const [downloading, setDownloading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [dark, setDark] = useState(true);
+  const [grid, setGrid] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { loadMenu(); }, [slug]);
@@ -148,6 +149,11 @@ export default function MenuPage() {
         .lc2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
       `}</style>
 
+      {/* Grid toggle */}
+      <button onClick={() => setGrid(!grid)} style={{ position: 'fixed', top: 16, right: 68, zIndex: 45, width: 44, height: 44, borderRadius: '50%', border: '1px solid ' + INPUTB, background: INPUTBG, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 12px rgba(0,0,0,0.15)', transition: 'all 0.3s' }}>
+        {grid ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={TX} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={TX} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>}
+      </button>
+
       {/* Theme toggle */}
       <button onClick={() => setDark(!dark)} style={{ position: 'fixed', top: 16, right: 16, zIndex: 45, width: 44, height: 44, borderRadius: '50%', border: `1px solid ${INPUTB}`, background: INPUTBG, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.15)', transition: 'all 0.3s' }}>
         {dark ? '\u2600\uFE0F' : '\uD83C\uDF19'}
@@ -199,12 +205,40 @@ export default function MenuPage() {
         ) : categories.filter(c => grp[c.id]?.length).map(cat => (
           <div key={cat.id} style={{ marginBottom: 32 }}>
             <h2 className="fi" style={{ fontFamily: "'Montserrat',sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 14, paddingLeft: 4, color: G }}>{cat.name}</h2>
-            <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: grid ? 'repeat(2, 1fr)' : '1fr' }}>
               {grp[cat.id].map((dish: any, i: number) => {
                 const pro = isPro(dish);
                 const ic = cart[dish.id] || 0;
+
+                if (grid) {
+                  // GRID VIEW - compact visual cards
+                  return (
+                    <div key={dish.id} className="fi" onClick={() => setSelectedDish(dish)} style={{ background: CARD, border: '1px solid ' + (ic > 0 ? 'rgba(224,205,87,0.4)' : CARDB), borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.3s', transitionDelay: i * 0.04 + 's', position: 'relative' }}>
+                      {dish.image_url ? (
+                        <img src={dish.image_url} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', display: 'block' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: 100, background: IMGBG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🍽️</div>
+                      )}
+                      {pro && <div style={{ position: 'absolute', top: 8, right: 8, padding: '2px 6px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: 'rgba(224,205,87,0.2)', color: G }}>PROMO</div>}
+                      {ic > 0 && <div style={{ position: 'absolute', top: 8, left: 8, width: 22, height: 22, borderRadius: '50%', background: G, color: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ic}</div>}
+                      <div style={{ padding: '10px 12px' }}>
+                        <h3 style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          {pro ? (
+                            <div><span style={{ color: TX3, fontSize: 11, textDecoration: 'line-through', marginRight: 4 }}>{dish.price.toLocaleString()}</span><span style={{ color: G, fontWeight: 700, fontSize: 14 }}>{dish.promo_price.toLocaleString()} F</span></div>
+                          ) : (
+                            <span style={{ color: PRC, fontWeight: 700, fontSize: 14 }}>{dish.price.toLocaleString()} F</span>
+                          )}
+                          <button onClick={(e) => { e.stopPropagation(); addC(dish.id); }} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, border: 'none', cursor: 'pointer', background: G, color: '#0A0A0A', fontWeight: 700 }}>+</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // LIST VIEW - full detail cards
                 return (
-                  <div key={dish.id} className="fi" style={{ background: CARD, border: `1px solid ${ic > 0 ? 'rgba(224,205,87,0.4)' : CARDB}`, borderRadius: 16, overflow: 'hidden', transition: 'all 0.3s', transitionDelay: `${i * 0.05}s` }}>
+                  <div key={dish.id} className="fi" style={{ background: CARD, border: '1px solid ' + (ic > 0 ? 'rgba(224,205,87,0.4)' : CARDB), borderRadius: 16, overflow: 'hidden', transition: 'all 0.3s', transitionDelay: i * 0.05 + 's' }}>
                     {dish.image_url ? (
                       <div onClick={() => setSelectedDish(dish)} style={{ cursor: 'pointer', position: 'relative' }}>
                         <img src={dish.image_url} alt="" style={{ width: '100%', height: 180, objectFit: 'contain', display: 'block', background: IMGBG }} />
