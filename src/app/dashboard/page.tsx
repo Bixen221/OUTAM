@@ -44,26 +44,73 @@ export default function Dashboard() {
   async function generateQR(slug) {
     const QRCode = (await import('qrcode')).default;
     const menuUrl = window.location.origin + '/menu/' + slug;
-    const qrDataUrl = await QRCode.toDataURL(menuUrl, { width: 512, margin: 2, color: { dark: '#1A1917', light: '#FFFFFF' } });
-    // Add logo overlay
+    const qrData = await QRCode.toDataURL(menuUrl, { width: 400, margin: 1, color: { dark: '#1A1917', light: '#FFFFFF' } });
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    const qrImg = new Image();
-    qrImg.src = qrDataUrl;
-    await new Promise(r => { qrImg.onload = r; });
-    ctx.drawImage(qrImg, 0, 0, 512, 512);
-    const logo = new Image();
-    logo.src = '/logo.png';
-    await new Promise(r => { logo.onload = r; logo.onerror = r; });
-    const logoSize = 80;
-    const x = (512 - logoSize) / 2;
+    const W = 560, H = 680;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    const clr = restaurant?.theme_color || '#E0CD57';
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#FFFFFF'); grad.addColorStop(1, '#F8F7F4');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.roundRect(0, 0, W, H, 24); ctx.fill();
+    // Border
+    ctx.strokeStyle = clr; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.roundRect(6, 6, W - 12, H - 12, 20); ctx.stroke();
+    ctx.strokeStyle = clr + '25'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.roundRect(14, 14, W - 28, H - 28, 16); ctx.stroke();
+    // Corner L decorations
+    const cL = 30, cO = 20;
+    ctx.strokeStyle = clr; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cO, cO + cL); ctx.lineTo(cO, cO); ctx.lineTo(cO + cL, cO); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W - cO - cL, cO); ctx.lineTo(W - cO, cO); ctx.lineTo(W - cO, cO + cL); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cO, H - cO - cL); ctx.lineTo(cO, H - cO); ctx.lineTo(cO + cL, H - cO); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W - cO - cL, H - cO); ctx.lineTo(W - cO, H - cO); ctx.lineTo(W - cO, H - cO - cL); ctx.stroke();
+    // Top accent bar
+    ctx.fillStyle = clr;
+    ctx.beginPath(); ctx.roundRect(W / 2 - 40, 6, 80, 4, 2); ctx.fill();
+    // Restaurant name
+    ctx.fillStyle = '#1A1917'; ctx.font = 'bold 28px Arial, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(restaurant?.name || 'Restaurant', W / 2, 58);
+    // Subtitle
+    ctx.fillStyle = clr; ctx.font = '500 13px Arial, sans-serif';
+    ctx.fillText('SCANNEZ POUR VOIR LE MENU', W / 2, 80);
+    // Decorative lines + diamond
+    ctx.strokeStyle = clr + '50'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(W / 2 - 72, 94); ctx.lineTo(W / 2 - 8, 94); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W / 2 + 8, 94); ctx.lineTo(W / 2 + 72, 94); ctx.stroke();
+    ctx.fillStyle = clr;
+    ctx.beginPath(); ctx.moveTo(W / 2, 89); ctx.lineTo(W / 2 + 5, 94); ctx.lineTo(W / 2, 99); ctx.lineTo(W / 2 - 5, 94); ctx.fill();
+    ctx.beginPath(); ctx.arc(W / 2 - 76, 94, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W / 2 + 76, 94, 2, 0, Math.PI * 2); ctx.fill();
+    // QR shadow + background
+    const qS = 370, qX = (W - qS) / 2, qY = 114;
+    ctx.fillStyle = 'rgba(0,0,0,0.03)';
+    ctx.beginPath(); ctx.roundRect(qX + 4, qY + 4, qS, qS, 14); ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.arc(256, 256, logoSize / 2 + 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.drawImage(logo, x, x, logoSize, logoSize);
+    ctx.beginPath(); ctx.roundRect(qX, qY, qS, qS, 14); ctx.fill();
+    // Draw QR
+    const qrImg = new Image(); qrImg.src = qrData;
+    await new Promise(r => { qrImg.onload = r; });
+    ctx.drawImage(qrImg, qX + 15, qY + 15, qS - 30, qS - 30);
+    // Logo on QR
+    const logo = new Image(); logo.src = '/logo.png';
+    await new Promise(r => { logo.onload = r; logo.onerror = r; });
+    const lS = 60, lX = (W - lS) / 2, lY = qY + (qS - lS) / 2;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.arc(W / 2, lY + lS / 2, lS / 2 + 6, 0, Math.PI * 2); ctx.fill();
+    ctx.drawImage(logo, lX, lY, lS, lS);
+    // Address + phone
+    ctx.fillStyle = '#6B7280'; ctx.font = '12px Arial, sans-serif'; ctx.textAlign = 'center';
+    if (restaurant?.address) ctx.fillText(restaurant.address, W / 2, qY + qS + 28);
+    if (restaurant?.phone) ctx.fillText(restaurant.phone, W / 2, qY + qS + 46);
+    // URL
+    ctx.fillStyle = clr; ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.fillText(menuUrl.replace('https://', ''), W / 2, H - 50);
+    // Powered by
+    ctx.fillStyle = '#9CA3AF'; ctx.font = '10px Arial, sans-serif';
+    ctx.fillText('Propulse par Outam', W / 2, H - 28);
     const url = canvas.toDataURL('image/png');
     setQrUrl(url);
   }
