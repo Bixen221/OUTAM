@@ -70,9 +70,18 @@ export default function Dashboard() {
     // Top accent bar
     ctx.fillStyle = clr;
     ctx.beginPath(); ctx.roundRect(W / 2 - 40, 6, 80, 4, 2); ctx.fill();
-    // Restaurant name
-    ctx.fillStyle = '#1A1917'; ctx.font = 'bold 28px Arial, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(restaurant?.name || 'Restaurant', W / 2, 58);
+    // Restaurant name (full or initials if too long)
+    ctx.fillStyle = '#1A1917'; ctx.textAlign = 'center';
+    const rName = restaurant?.name || 'Restaurant';
+    ctx.font = 'bold 28px Arial, sans-serif';
+    const nameWidth = ctx.measureText(rName).width;
+    if (nameWidth > W - 60) {
+      const initials = rName.split(' ').map(w => w[0]).join('').toUpperCase();
+      ctx.font = 'bold 32px Arial, sans-serif';
+      ctx.fillText(initials, W / 2, 58);
+    } else {
+      ctx.fillText(rName, W / 2, 58);
+    }
     // Subtitle
     ctx.fillStyle = '#1A1917'; ctx.font = '500 13px Arial, sans-serif';
     ctx.fillText('SCANNEZ POUR VOIR LE MENU', W / 2, 80);
