@@ -38,18 +38,18 @@ export default function Dashboard() {
     const { count: todayCount } = await supabase.from('menu_scans').select('*', { count: 'exact', head: true }).eq('restaurant_id', resto.id).gte('scanned_at', today);
     setScansToday(todayCount || 0);
     setLoading(false);
-    generateQR(resto.slug);
+    generateQR(resto);
   }
 
-  async function generateQR(slug) {
+  async function generateQR(resto) {
     const QRCode = (await import('qrcode')).default;
-    const menuUrl = window.location.origin + '/menu/' + slug;
+    const menuUrl = window.location.origin + '/menu/' + resto.slug;
     const qrData = await QRCode.toDataURL(menuUrl, { width: 400, margin: 1, color: { dark: '#1A1917', light: '#FFFFFF' } });
     const canvas = document.createElement('canvas');
     const W = 560, H = 680;
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-    const clr = restaurant?.theme_color || '#E0CD57';
+    const clr = resto?.theme_color || '#E0CD57';
     // Background gradient
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#FFFFFF'); grad.addColorStop(1, '#F8F7F4');
@@ -72,7 +72,7 @@ export default function Dashboard() {
     ctx.beginPath(); ctx.roundRect(W / 2 - 40, 6, 80, 4, 2); ctx.fill();
     // Restaurant name (full or initials if too long)
     ctx.fillStyle = '#1A1917'; ctx.textAlign = 'center';
-    const rName = restaurant?.name || 'Restaurant';
+    const rName = resto?.name || 'Restaurant';
     ctx.font = 'bold 28px Arial, sans-serif';
     const nameWidth = ctx.measureText(rName).width;
     if (nameWidth > W - 60) {
@@ -112,8 +112,8 @@ export default function Dashboard() {
     ctx.drawImage(logo, lX, lY, lS, lS);
     // Address + phone
     ctx.fillStyle = '#1A1917'; ctx.font = '12px Arial, sans-serif'; ctx.textAlign = 'center';
-    if (restaurant?.address) ctx.fillText(restaurant.address, W / 2, qY + qS + 28);
-    if (restaurant?.phone) ctx.fillText(restaurant.phone, W / 2, qY + qS + 46);
+    if (resto?.address) ctx.fillText(resto.address, W / 2, qY + qS + 28);
+    if (resto?.phone) ctx.fillText(resto.phone, W / 2, qY + qS + 46);
 
     // Powered by
     ctx.fillStyle = '#1A1917'; ctx.font = 'bold 11px Arial, sans-serif';
