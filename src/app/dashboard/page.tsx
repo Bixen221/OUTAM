@@ -429,16 +429,23 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Trash */}
+      {/* Trash Modal */}
       {showTrash && (
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowTrash(false)}>
+        <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 550, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #E5E7EB' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h2 className="font-bold text-lg">Corbeille</h2>
-              <p className="text-gray-400 text-sm">{trashedCats.length + trashedDishes.length} element(s) supprime(s)</p>
+              <h2 style={{ fontWeight: 700, fontSize: 18 }}>Corbeille</h2>
+              <p style={{ color: '#9CA3AF', fontSize: 13 }}>{trashedCats.length + trashedDishes.length} element(s)</p>
             </div>
-            {(trashedCats.length + trashedDishes.length) > 0 && <button onClick={emptyTrash} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100">Vider la corbeille</button>}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {(trashedCats.length + trashedDishes.length) > 0 && <button onClick={emptyTrash} style={{ fontSize: 12, padding: '6px 12px', borderRadius: 8, background: '#FEE2E2', color: '#DC2626', border: 'none', cursor: 'pointer' }}>Vider tout</button>}
+              <button onClick={() => setShowTrash(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F3F4F6', border: 'none', cursor: 'pointer', fontSize: 16, color: '#6B7280' }}>x</button>
+            </div>
           </div>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
           {trashedCats.length === 0 && trashedDishes.length === 0 ? (
             <p className="text-center text-gray-400 py-12">La corbeille est vide</p>
           ) : (
@@ -474,6 +481,8 @@ export default function Dashboard() {
               })}
             </div>
           )}
+          </div>
+        </div>
         </div>
       )}
 
