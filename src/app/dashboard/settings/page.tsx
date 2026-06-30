@@ -96,7 +96,7 @@ export default function Settings() {
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-2">Couleur du menu</label>
             <div className="flex items-center gap-3">
               <input type="color" value={form.theme_color} onChange={(e) => setForm({...form, theme_color: e.target.value})} className="w-10 h-10 rounded-xl border cursor-pointer p-1" />
-              <div className="flex gap-1.5">{['#3300FF','#DC2626','#16A34A','#D97706','#7C3AED','#0284C7','#0F766E','#C026D3'].map((c) => <button key={c} onClick={() => setForm({...form, theme_color: c})} className={'w-7 h-7 rounded-full border-2 transition-all ' + (form.theme_color === c ? 'border-gray-900 scale-110' : 'border-transparent')} style={{ background: c }} />)}</div>
+              <div className="flex gap-1.5">{['#3300FF','#1E40AF','#0284C7','#0891B2','#0F766E','#16A34A','#65A30D','#CA8A04','#D97706','#EA580C','#DC2626','#E11D48','#C026D3','#7C3AED','#4F46E5','#1A1917','#E0CD57','#78716C','#0D9488','#6D28D9','#BE185D','#B45309','#15803D','#1D4ED8'].map((c) => <button key={c} onClick={() => setForm({...form, theme_color: c})} className={'w-7 h-7 rounded-full border-2 transition-all ' + (form.theme_color === c ? 'border-gray-900 scale-110' : 'border-transparent')} style={{ background: c }} />)}</div>
             </div>
           </div>
           {msg && <p className={'text-sm p-3 rounded-xl ' + (msg.includes('Erreur') ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600')}>{msg}</p>}
