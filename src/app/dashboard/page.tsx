@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CATALOG } from '@/lib/catalog';
 
 export default function Dashboard() {
   const [restaurant, setRestaurant] = useState(null);
@@ -24,6 +23,7 @@ export default function Dashboard() {
   const [selectedItems, setSelectedItems] = useState({});
   const [catalogPrices, setCatalogPrices] = useState({});
   const [importing, setImporting] = useState(false);
+  const [catalogData, setCatalogData] = useState([]);
   const [qrUrl, setQrUrl] = useState('');
   const router = useRouter();
 
@@ -203,6 +203,16 @@ export default function Dashboard() {
     setDishForm({ name:'', price:'', description:'', category_id: categories[0]?.id?.toString()||'', image:null, promo_price:'', promo_expires_at:'' });
     setShowAddDish(true);
   }
+  async function loadCatalog() {
+    const { data: cats } = await supabase.from('catalog_categories').select('*').order('sort_order');
+    const { data: dsh } = await supabase.from('catalog_dishes').select('*').order('sort_order');
+    const catalog = (cats || []).map(c => ({
+      category: c.name, emoji: c.emoji,
+      dishes: (dsh || []).filter(d => d.category_id === c.id).map(d => ({ name: d.name, desc: d.description }))
+    }));
+    setCatalogData(catalog);
+  }
+
   function toggleCatalogItem(catName, dishName) {
     const key = catName + '::' + dishName;
     setSelectedItems(prev => {
@@ -244,7 +254,7 @@ export default function Dashboard() {
         const existing = categories.find(c => c.name === catName);
         if (existing) { catMap[catName] = existing.id; }
         else {
-          const catInfo = CATALOG.find(c => c.category === catName);
+          const catInfo = catalogData.find(c => c.category === catName);
           const { data } = await supabase.from('categories').insert({ restaurant_id: restaurant.id, name: catName, sort_order: categories.length + Object.keys(catMap).length }).select().single();
           if (data) catMap[catName] = data.id;
         }
@@ -255,7 +265,7 @@ export default function Dashboard() {
       const [catName, dishName] = key.split('::');
       const catId = catMap[catName];
       if (!catId) continue;
-      const catInfo = CATALOG.find(c => c.category === catName);
+      const catInfo = catalogData.find(c => c.category === catName);
       const dishInfo = catInfo?.dishes.find(d => d.name === dishName);
       if (!dishInfo) continue;
       const price = Math.max(0, parseInt(catalogPrices[key]) || 0);
@@ -375,7 +385,7 @@ export default function Dashboard() {
           {categories.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucune catégorie.</p> : <div className="flex flex-wrap gap-2">{categories.map((cat) => <div key={cat.id} className="bg-white rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 text-sm"><span className="font-medium">{cat.name}</span><span className="text-gray-400 text-xs">({dishes.filter(d => d.category_id === cat.id).length})</span><button onClick={() => { setEditCatId(cat.id); setEditCatName(cat.name); }} className="text-gray-400 hover:text-brand-500 text-xs">✎</button><button onClick={() => deleteCategory(cat.id)} className="text-red-400 hover:text-red-600 text-xs">×</button></div>)}</div>}
         </div>
         <div>
-          <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Plats</h2><div className="flex gap-2">{categories.length > 0 && <button onClick={() => setShowCatalog(true)} className="btn-ghost text-xs">Importer</button>}{categories.length > 0 && <button onClick={openNewDish} className="btn-primary text-xs">+ Plat</button>}</div></div>
+          <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Plats</h2><div className="flex gap-2">{categories.length > 0 && <button onClick={() => { loadCatalog(); setShowCatalog(true); }} className="btn-ghost text-xs">Importer</button>}{categories.length > 0 && <button onClick={openNewDish} className="btn-primary text-xs">+ Plat</button>}</div></div>
           {showAddDish && <div className="bg-white rounded-2xl p-5 border border-brand-200 mb-4"><h3 className="font-bold text-sm mb-4">{editDish ? 'Modifier le plat' : 'Nouveau plat'}</h3><div className="grid md:grid-cols-2 gap-3"><div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Nom *</label><input type="text" value={dishForm.name} onChange={(e) => setDishForm({...dishForm, name: e.target.value})} placeholder="ex: Thiéboudienne" className="input-field" /></div><div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Prix (FCFA) *</label><input type="number" value={dishForm.price} onChange={(e) => setDishForm({...dishForm, price: e.target.value})} placeholder="3500" className="input-field" /></div><div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Catégorie *</label><select value={dishForm.category_id} onChange={(e) => setDishForm({...dishForm, category_id: e.target.value})} className="input-field">{categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div><div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label><input type="file" accept="image/*" onChange={(e) => setDishForm({...dishForm, image: e.target.files?.[0]||null})} className="input-field text-sm" /></div><div className="md:col-span-2"><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label><textarea value={dishForm.description} onChange={(e) => setDishForm({...dishForm, description: e.target.value})} placeholder="Décrivez le plat..." className="input-field" rows={2} /></div></div><div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200"><h4 className="text-xs font-semibold uppercase tracking-wider text-amber-600 mb-3">Promotion (facultatif)</h4><div className="grid md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-500 block mb-1">Prix promo (FCFA)</label><input type="number" value={dishForm.promo_price} onChange={(e) => setDishForm({...dishForm, promo_price: e.target.value})} placeholder="ex: 2500" className="input-field" /></div><div><label className="text-xs text-gray-500 block mb-1">Expire le</label><input type="date" value={dishForm.promo_expires_at} onChange={(e) => setDishForm({...dishForm, promo_expires_at: e.target.value})} className="input-field" /></div></div></div><div className="flex gap-2 mt-4"><button onClick={saveDish} disabled={saving} className="btn-primary text-sm">{saving ? 'Enregistrement...' : editDish ? 'Modifier' : 'Ajouter'}</button><button onClick={() => { setShowAddDish(false); setEditDish(null); }} className="btn-ghost text-sm">Annuler</button></div></div>}
           {dishes.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucun plat.</p> : <div className="space-y-4">{categories.map((cat) => { const cd = dishes.filter(d => d.category_id === cat.id); if (!cd.length) return null; return <div key={cat.id}><h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{cat.name}</h3><div className="space-y-2">{cd.map((dish) => { const pa = isPromoActive(dish); return <div key={dish.id} className={'bg-white rounded-2xl p-4 border flex items-center gap-3 transition-colors ' + (!dish.is_available ? 'border-red-200 bg-red-50/30' : 'border-gray-100 hover:border-brand-200')}>{dish.image_url ? <img src={dish.image_url} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" /> : <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">🍽️</div>}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><span className={'font-semibold text-sm ' + (!dish.is_available ? 'line-through text-gray-400' : '')}>{dish.name}</span>{!dish.is_available && <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-500 font-semibold">ÉPUISÉ</span>}{pa && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 font-semibold">PROMO</span>}</div>{dish.description && <p className="text-xs text-gray-400 truncate mt-0.5">{dish.description}</p>}{pa && dish.promo_expires_at && <p className="text-[10px] text-amber-500 mt-0.5">Expire le {new Date(dish.promo_expires_at).toLocaleDateString('fr-FR')}</p>}</div><div className="text-right flex-shrink-0"><div className="flex items-center gap-1.5">{pa ? <><span className="text-xs text-gray-400 line-through">{dish.price.toLocaleString()} F</span><span className="font-bold text-amber-500 text-sm">{dish.promo_price.toLocaleString()} F</span></> : <span className="font-bold text-brand-500 text-sm">{dish.price.toLocaleString()} F</span>}</div><div className="flex items-center gap-1 mt-1.5 justify-end flex-wrap"><button onClick={() => toggleDish(dish.id, dish.is_available)} className={'text-[10px] px-2 py-1 rounded-full font-medium ' + (dish.is_available ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500')}>{dish.is_available ? '✓ Dispo' : '✗ Épuisé'}</button>{pa && <button onClick={() => removePromo(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-amber-50 text-amber-600">Retirer promo</button>}<button onClick={() => openEditDish(dish)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-500 hover:bg-brand-50 hover:text-brand-500">Modifier</button><button onClick={() => deleteDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500">×</button></div></div></div>; })}</div></div>; })}</div>}
         </div>
@@ -393,7 +403,7 @@ export default function Dashboard() {
               <button onClick={() => setShowCatalog(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F3F4F6', border: 'none', cursor: 'pointer', fontSize: 16, color: '#6B7280' }}>x</button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
-              {CATALOG.map(cat => {
+              {catalogData.map(cat => {
                 const allSelected = cat.dishes.every(d => selectedItems[cat.category + '::' + d.name]);
                 const someSelected = cat.dishes.some(d => selectedItems[cat.category + '::' + d.name]);
                 return (
