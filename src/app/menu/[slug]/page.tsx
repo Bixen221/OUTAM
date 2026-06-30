@@ -100,7 +100,7 @@ export default function MenuPage() {
   }
 
   // Theme colors
-  const G = '#E0CD57';
+  const G = restaurant?.theme_color || '#E0CD57';
   const BG = dark ? '#0A0A0A' : '#FAFAF8';
   const TX = dark ? '#ffffff' : '#1A1917';
   const TX2 = dark ? 'rgba(255,255,255,0.45)' : '#6B7280';
