@@ -258,7 +258,7 @@ export default function Dashboard() {
       const catInfo = CATALOG.find(c => c.category === catName);
       const dishInfo = catInfo?.dishes.find(d => d.name === dishName);
       if (!dishInfo) continue;
-      const price = parseInt(catalogPrices[key]) || 0;
+      const price = Math.max(0, parseInt(catalogPrices[key]) || 0);
       const existing = dishes.find(d => d.name === dishName && d.category_id === catId);
       if (existing) continue;
       await supabase.from('dishes').insert({
@@ -420,7 +420,7 @@ export default function Dashboard() {
                             </div>
                             {sel && (
                               <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0 }}>
-                                <input type="number" placeholder="Prix" value={catalogPrices[key] || ''} onChange={e => setCatalogPrice(cat.category, dish.name, e.target.value)} style={{ width: 80, padding: '6px 8px', borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 13, textAlign: 'right', outline: 'none' }} />
+                                <input type="number" min="0" placeholder="Prix" value={catalogPrices[key] || ''} onChange={e => setCatalogPrice(cat.category, dish.name, e.target.value)} style={{ width: 80, padding: '6px 8px', borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 13, textAlign: 'right', outline: 'none' }} />
                                 <span style={{ fontSize: 11, color: '#9CA3AF', marginLeft: 4 }}>F</span>
                               </div>
                             )}

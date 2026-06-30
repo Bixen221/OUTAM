@@ -217,7 +217,7 @@ export default function MenuPage() {
                       {dish.image_url ? (
                         <img src={dish.image_url} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', display: 'block' }} />
                       ) : (
-                        <div style={{ width: '100%', height: 100, background: IMGBG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🍽️</div>
+                        <div style={{ width: '100%', height: 100, background: dark ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' : 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🍽️</div>
                       )}
                       {pro && <div style={{ position: 'absolute', top: 8, right: 8, padding: '2px 6px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: 'rgba(224,205,87,0.2)', color: G }}>PROMO</div>}
                       {ic > 0 && <div style={{ position: 'absolute', top: 8, left: 8, width: 22, height: 22, borderRadius: '50%', background: G, color: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ic}</div>}
