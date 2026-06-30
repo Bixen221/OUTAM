@@ -16,6 +16,8 @@ export default function Dashboard() {
   const [showAddDish, setShowAddDish] = useState(false);
   const [editDish, setEditDish] = useState(null);
   const [newCatName, setNewCatName] = useState('');
+  const [editCatId, setEditCatId] = useState(null);
+  const [editCatName, setEditCatName] = useState('');
   const [dishForm, setDishForm] = useState({ name:'', price:'', description:'', category_id:'', image:null, promo_price:'', promo_expires_at:'' });
   const [saving, setSaving] = useState(false);
   const [showCatalog, setShowCatalog] = useState(false);
@@ -133,6 +135,13 @@ export default function Dashboard() {
     await supabase.from('categories').insert({ restaurant_id: restaurant.id, name: newCatName.trim(), sort_order: categories.length });
     setNewCatName(''); setShowAddCat(false); setSaving(false); loadData(); showToast('Categorie ajoutee');
   }
+  async function renameCategory() {
+    if (!editCatName.trim() || !editCatId) return;
+    setSaving(true);
+    await supabase.from('categories').update({ name: editCatName.trim() }).eq('id', editCatId);
+    setEditCatId(null); setEditCatName(''); setSaving(false); loadData(); showToast('Categorie renommee');
+  }
+
   async function deleteCategory(id) {
     if (!confirm('Supprimer cette catégorie et tous ses plats ?')) return;
     await supabase.from('categories').delete().eq('id', id); loadData(); showToast('Categorie supprimee');
@@ -363,7 +372,7 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Catégories</h2><button onClick={() => setShowAddCat(true)} className="btn-primary text-xs">+ Catégorie</button></div>
           {showAddCat && <div className="bg-white rounded-2xl p-4 border border-brand-200 mb-3 flex gap-2"><input type="text" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="ex: Entrées, Plats, Boissons..." className="input-field flex-1" onKeyDown={(e) => e.key === 'Enter' && addCategory()} autoFocus /><button onClick={addCategory} disabled={saving} className="btn-primary text-xs">{saving ? '...' : 'OK'}</button><button onClick={() => setShowAddCat(false)} className="btn-ghost text-xs">Annuler</button></div>}
-          {categories.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucune catégorie.</p> : <div className="flex flex-wrap gap-2">{categories.map((cat) => <div key={cat.id} className="bg-white rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 text-sm"><span className="font-medium">{cat.name}</span><span className="text-gray-400 text-xs">({dishes.filter(d => d.category_id === cat.id).length})</span><button onClick={() => deleteCategory(cat.id)} className="text-red-400 hover:text-red-600 text-xs">×</button></div>)}</div>}
+          {categories.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucune catégorie.</p> : <div className="flex flex-wrap gap-2">{categories.map((cat) => <div key={cat.id} className="bg-white rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 text-sm"><span className="font-medium">{cat.name}</span><span className="text-gray-400 text-xs">({dishes.filter(d => d.category_id === cat.id).length})</span><button onClick={() => { setEditCatId(cat.id); setEditCatName(cat.name); }} className="text-gray-400 hover:text-brand-500 text-xs">✎</button><button onClick={() => deleteCategory(cat.id)} className="text-red-400 hover:text-red-600 text-xs">×</button></div>)}</div>}
         </div>
         <div>
           <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Plats</h2><div className="flex gap-2">{categories.length > 0 && <button onClick={() => setShowCatalog(true)} className="btn-ghost text-xs">Importer</button>}{categories.length > 0 && <button onClick={openNewDish} className="btn-primary text-xs">+ Plat</button>}</div></div>
