@@ -23,6 +23,9 @@ export default function Dashboard() {
   const [selectedItems, setSelectedItems] = useState({});
   const [catalogPrices, setCatalogPrices] = useState({});
   const [importing, setImporting] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
+  const [trashedCats, setTrashedCats] = useState([]);
+  const [trashedDishes, setTrashedDishes] = useState([]);
   const [catalogData, setCatalogData] = useState([]);
   const [qrUrl, setQrUrl] = useState('');
   const router = useRouter();
@@ -35,10 +38,14 @@ export default function Dashboard() {
     const { data: resto } = await supabase.from('restaurants').select('*').eq('owner_id', user.id).single();
     if (!resto) { router.push('/auth/signup'); return; }
     setRestaurant(resto);
-    const { data: cats } = await supabase.from('categories').select('*').eq('restaurant_id', resto.id).order('sort_order');
+    const { data: cats } = await supabase.from('categories').select('*').eq('restaurant_id', resto.id).is('deleted_at', null).order('sort_order');
     setCategories(cats || []);
-    const { data: d } = await supabase.from('dishes').select('*').eq('restaurant_id', resto.id).order('sort_order');
+    const { data: d } = await supabase.from('dishes').select('*').eq('restaurant_id', resto.id).is('deleted_at', null).order('sort_order');
     setDishes(d || []);
+    const { data: tCats } = await supabase.from('categories').select('*').eq('restaurant_id', resto.id).not('deleted_at', 'is', null);
+    setTrashedCats(tCats || []);
+    const { data: tDishes } = await supabase.from('dishes').select('*').eq('restaurant_id', resto.id).not('deleted_at', 'is', null);
+    setTrashedDishes(tDishes || []);
     const { count: total } = await supabase.from('menu_scans').select('*', { count: 'exact', head: true }).eq('restaurant_id', resto.id);
     setScansCount(total || 0);
     const today = new Date().toISOString().split('T')[0];
@@ -144,7 +151,7 @@ export default function Dashboard() {
 
   async function deleteCategory(id) {
     if (!confirm('Supprimer cette catégorie et tous ses plats ?')) return;
-    await supabase.from('categories').delete().eq('id', id); loadData(); showToast('Categorie supprimee');
+    const now = new Date().toISOString(); await supabase.from('dishes').update({ deleted_at: now }).eq('category_id', id).is('deleted_at', null); await supabase.from('categories').update({ deleted_at: now }).eq('id', id); loadData(); showToast('Categorie mise a la corbeille');
   }
   async function compressImage(file, maxWidth = 1200, quality = 0.8) {
     return new Promise((resolve) => {
@@ -190,7 +197,7 @@ export default function Dashboard() {
     setShowAddDish(false); setEditDish(null); setSaving(false); loadData(); showToast(editDish ? 'Plat modifie' : 'Plat ajoute');
   }
   async function toggleDish(id, available) { await supabase.from('dishes').update({ is_available: !available }).eq('id', id); loadData(); showToast(available ? 'Plat marque epuise' : 'Plat remis disponible'); }
-  async function deleteDish(id) { if (!confirm('Supprimer ce plat ?')) return; await supabase.from('dishes').delete().eq('id', id); loadData(); showToast('Plat supprime'); }
+  async function deleteDish(id) { if (!confirm('Supprimer ce plat ?')) return; await supabase.from('dishes').update({ deleted_at: new Date().toISOString() }).eq('id', id); loadData(); showToast('Plat mis a la corbeille'); }
   async function removePromo(id) { await supabase.from('dishes').update({ promo_price: null, promo_expires_at: null }).eq('id', id); loadData(); showToast('Promotion retiree'); }
 
   function openEditDish(dish) {
@@ -285,6 +292,37 @@ export default function Dashboard() {
     showToast(count + ' plat' + (count > 1 ? 's' : '') + ' importe' + (count > 1 ? 's' : ''));
   }
 
+  async function restoreCategory(id) {
+    await supabase.from('categories').update({ deleted_at: null }).eq('id', id);
+    await supabase.from('dishes').update({ deleted_at: null }).eq('category_id', id);
+    loadData(); showToast('Categorie restauree');
+  }
+
+  async function restoreDish(id) {
+    await supabase.from('dishes').update({ deleted_at: null }).eq('id', id);
+    loadData(); showToast('Plat restaure');
+  }
+
+  async function permanentDeleteCategory(id) {
+    if (!confirm('Supprimer definitivement cette categorie et ses plats ?')) return;
+    await supabase.from('dishes').delete().eq('category_id', id);
+    await supabase.from('categories').delete().eq('id', id);
+    loadData(); showToast('Categorie supprimee definitivement');
+  }
+
+  async function permanentDeleteDish(id) {
+    if (!confirm('Supprimer definitivement ce plat ?')) return;
+    await supabase.from('dishes').delete().eq('id', id);
+    loadData(); showToast('Plat supprime definitivement');
+  }
+
+  async function emptyTrash() {
+    if (!confirm('Vider la corbeille ? Cette action est irreversible.')) return;
+    for (const c of trashedCats) { await supabase.from('dishes').delete().eq('category_id', c.id); await supabase.from('categories').delete().eq('id', c.id); }
+    for (const d of trashedDishes) { await supabase.from('dishes').delete().eq('id', d.id); }
+    loadData(); showToast('Corbeille videe');
+  }
+
   async function logout() { await supabase.auth.signOut(); router.push('/'); }
 
   function showToast(msg, type = 'success') {
@@ -323,6 +361,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-0.5 bg-gray-100 rounded-full p-1">
               <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-900 shadow-sm">Menu</span>
+              {(trashedCats.length + trashedDishes.length) > 0 && <button onClick={() => setShowTrash(!showTrash)} className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors" style={{ position: 'relative' }}>{showTrash ? 'Menu' : 'Corbeille'}<span style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: '50%', background: '#DC2626', color: '#fff', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{trashedCats.length + trashedDishes.length}</span></button>}
               <Link href="/dashboard/analytics" className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900">Analytics</Link>
               <Link href="/dashboard/settings" className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-900">Profil</Link>
             </div>
@@ -390,6 +429,54 @@ export default function Dashboard() {
           {dishes.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucun plat.</p> : <div className="space-y-4">{categories.map((cat) => { const cd = dishes.filter(d => d.category_id === cat.id); if (!cd.length) return null; return <div key={cat.id}><h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{cat.name}</h3><div className="space-y-2">{cd.map((dish) => { const pa = isPromoActive(dish); return <div key={dish.id} className={'bg-white rounded-2xl p-4 border flex items-center gap-3 transition-colors ' + (!dish.is_available ? 'border-red-200 bg-red-50/30' : 'border-gray-100 hover:border-brand-200')}>{dish.image_url ? <img src={dish.image_url} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" /> : <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">🍽️</div>}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><span className={'font-semibold text-sm ' + (!dish.is_available ? 'line-through text-gray-400' : '')}>{dish.name}</span>{!dish.is_available && <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-500 font-semibold">ÉPUISÉ</span>}{pa && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 font-semibold">PROMO</span>}</div>{dish.description && <p className="text-xs text-gray-400 truncate mt-0.5">{dish.description}</p>}{pa && dish.promo_expires_at && <p className="text-[10px] text-amber-500 mt-0.5">Expire le {new Date(dish.promo_expires_at).toLocaleDateString('fr-FR')}</p>}</div><div className="text-right flex-shrink-0"><div className="flex items-center gap-1.5">{pa ? <><span className="text-xs text-gray-400 line-through">{dish.price.toLocaleString()} F</span><span className="font-bold text-amber-500 text-sm">{dish.promo_price.toLocaleString()} F</span></> : <span className="font-bold text-brand-500 text-sm">{dish.price.toLocaleString()} F</span>}</div><div className="flex items-center gap-1 mt-1.5 justify-end flex-wrap"><button onClick={() => toggleDish(dish.id, dish.is_available)} className={'text-[10px] px-2 py-1 rounded-full font-medium ' + (dish.is_available ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500')}>{dish.is_available ? '✓ Dispo' : '✗ Épuisé'}</button>{pa && <button onClick={() => removePromo(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-amber-50 text-amber-600">Retirer promo</button>}<button onClick={() => openEditDish(dish)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-500 hover:bg-brand-50 hover:text-brand-500">Modifier</button><button onClick={() => deleteDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500">×</button></div></div></div>; })}</div></div>; })}</div>}
         </div>
       </div>
+
+      {/* Trash */}
+      {showTrash && (
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-bold text-lg">Corbeille</h2>
+              <p className="text-gray-400 text-sm">{trashedCats.length + trashedDishes.length} element(s) supprime(s)</p>
+            </div>
+            {(trashedCats.length + trashedDishes.length) > 0 && <button onClick={emptyTrash} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100">Vider la corbeille</button>}
+          </div>
+          {trashedCats.length === 0 && trashedDishes.length === 0 ? (
+            <p className="text-center text-gray-400 py-12">La corbeille est vide</p>
+          ) : (
+            <div className="space-y-2">
+              {trashedCats.map(cat => (
+                <div key={'tc-' + cat.id} className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center gap-3 opacity-60">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg">📁</div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">{cat.name}</p>
+                    <p className="text-xs text-gray-400">Categorie — supprimee le {new Date(cat.deleted_at).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => restoreCategory(cat.id)} className="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600">Restaurer</button>
+                    <button onClick={() => permanentDeleteCategory(cat.id)} className="text-[10px] px-2 py-1 rounded-full bg-red-50 text-red-400">Supprimer</button>
+                  </div>
+                </div>
+              ))}
+              {trashedDishes.map(dish => {
+                const cat = [...categories, ...trashedCats].find(c => c.id === dish.category_id);
+                return (
+                  <div key={'td-' + dish.id} className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center gap-3 opacity-60">
+                    {dish.image_url ? <img src={dish.image_url} alt="" className="w-10 h-10 rounded-xl object-cover" /> : <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg">🍽️</div>}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm">{dish.name}</p>
+                      <p className="text-xs text-gray-400">{cat?.name || 'Sans categorie'} — {dish.price?.toLocaleString()} F — supprime le {new Date(dish.deleted_at).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button onClick={() => restoreDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600">Restaurer</button>
+                      <button onClick={() => permanentDeleteDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-red-50 text-red-400">Supprimer</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Catalog Modal */}
       {showCatalog && (

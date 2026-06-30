@@ -48,9 +48,9 @@ export default function MenuPage() {
     if (!r) { setNotFound(true); setLoading(false); return; }
     setRestaurant(r);
     await supabase.from('menu_scans').insert({ restaurant_id: r.id, user_agent: navigator.userAgent || '' });
-    const { data: cats } = await supabase.from('categories').select('*').eq('restaurant_id', r.id).eq('is_active', true).order('sort_order');
+    const { data: cats } = await supabase.from('categories').select('*').eq('restaurant_id', r.id).eq('is_active', true).is('deleted_at', null).order('sort_order');
     setCategories(cats || []);
-    const { data: d } = await supabase.from('dishes').select('*').eq('restaurant_id', r.id).eq('is_available', true).order('sort_order');
+    const { data: d } = await supabase.from('dishes').select('*').eq('restaurant_id', r.id).eq('is_available', true).is('deleted_at', null).order('sort_order');
     setDishes(d || []);
     setLoading(false);
   }
