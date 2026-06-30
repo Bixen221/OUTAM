@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const COLORS = ['#3300FF','#DC2626','#16A34A','#D97706','#7C3AED','#0284C7','#0F766E','#C026D3'];
+const COLORS = ['#3300FF','#1E40AF','#0284C7','#0891B2','#0F766E','#16A34A','#65A30D','#CA8A04','#D97706','#EA580C','#DC2626','#E11D48','#C026D3','#7C3AED','#4F46E5','#1A1917','#E0CD57','#78716C','#0D9488','#6D28D9','#BE185D','#B45309','#15803D','#1D4ED8'];
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
