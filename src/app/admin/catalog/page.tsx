@@ -16,6 +16,9 @@ export default function AdminCatalog() {
   const [dishForm, setDishForm] = useState({ name: '', description: '', category_id: '' });
   const [editDish, setEditDish] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
+  const [trashedCats, setTrashedCats] = useState([]);
+  const [trashedDishes, setTrashedDishes] = useState([]);
   const router = useRouter();
 
   useEffect(() => { checkAdmin(); }, []);
@@ -30,10 +33,14 @@ export default function AdminCatalog() {
   }
 
   async function loadData() {
-    const { data: cats } = await supabase.from('catalog_categories').select('*').order('sort_order');
+    const { data: cats } = await supabase.from('catalog_categories').select('*').is('deleted_at', null).order('sort_order');
     setCategories(cats || []);
-    const { data: d } = await supabase.from('catalog_dishes').select('*').order('sort_order');
+    const { data: d } = await supabase.from('catalog_dishes').select('*').is('deleted_at', null).order('sort_order');
     setDishes(d || []);
+    const { data: tCats } = await supabase.from('catalog_categories').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false });
+    setTrashedCats(tCats || []);
+    const { data: tDishes } = await supabase.from('catalog_dishes').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false });
+    setTrashedDishes(tDishes || []);
     setLoading(false);
   }
 
@@ -62,10 +69,24 @@ export default function AdminCatalog() {
   }
 
   async function deleteCategory(id) {
-    if (!confirm('Supprimer cette categorie et tous ses plats du catalogue ?')) return;
+    if (!confirm('Supprimer cette categorie et ses plats ? Vous pourrez les restaurer depuis la corbeille.')) return;
+    const now = new Date().toISOString();
+    await supabase.from('catalog_dishes').update({ deleted_at: now }).eq('category_id', id).is('deleted_at', null);
+    await supabase.from('catalog_categories').update({ deleted_at: now }).eq('id', id);
+    loadData(); showToast('Categorie mise a la corbeille');
+  }
+
+  async function restoreCategory(id) {
+    await supabase.from('catalog_categories').update({ deleted_at: null }).eq('id', id);
+    await supabase.from('catalog_dishes').update({ deleted_at: null }).eq('category_id', id);
+    loadData(); showToast('Categorie restauree');
+  }
+
+  async function permanentDeleteCategory(id) {
+    if (!confirm('Supprimer definitivement ? Cette action est irreversible.')) return;
     await supabase.from('catalog_dishes').delete().eq('category_id', id);
     await supabase.from('catalog_categories').delete().eq('id', id);
-    loadData(); showToast('Categorie supprimee');
+    loadData(); showToast('Categorie supprimee definitivement');
   }
 
   async function addDish() {
@@ -84,9 +105,26 @@ export default function AdminCatalog() {
   }
 
   async function deleteDish(id) {
-    if (!confirm('Supprimer ce plat du catalogue ?')) return;
+    await supabase.from('catalog_dishes').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+    loadData(); showToast('Plat mis a la corbeille');
+  }
+
+  async function restoreDish(id) {
+    await supabase.from('catalog_dishes').update({ deleted_at: null }).eq('id', id);
+    loadData(); showToast('Plat restaure');
+  }
+
+  async function permanentDeleteDish(id) {
+    if (!confirm('Supprimer definitivement ?')) return;
     await supabase.from('catalog_dishes').delete().eq('id', id);
-    loadData(); showToast('Plat supprime');
+    loadData(); showToast('Plat supprime definitivement');
+  }
+
+  async function emptyTrash() {
+    if (!confirm('Vider la corbeille ? Cette action est irreversible.')) return;
+    for (const c of trashedCats) { await supabase.from('catalog_dishes').delete().eq('category_id', c.id); await supabase.from('catalog_categories').delete().eq('id', c.id); }
+    for (const d of trashedDishes) { await supabase.from('catalog_dishes').delete().eq('id', d.id); }
+    loadData(); showToast('Corbeille videe');
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Verification admin...</div>;
@@ -115,6 +153,7 @@ export default function AdminCatalog() {
             <p className="text-gray-400 text-sm mt-0.5">Gerez les plats et categories que les restaurants peuvent importer</p>
           </div>
           <div className="flex gap-2">
+            <button onClick={() => setShowTrash(!showTrash)} className="btn-ghost text-xs" style={{ position: 'relative' }}>{showTrash ? 'Catalogue' : 'Corbeille'}{!showTrash && (trashedCats.length + trashedDishes.length) > 0 && <span style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#DC2626', color: '#fff', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{trashedCats.length + trashedDishes.length}</span>}</button>
             <button onClick={() => setShowAddCat(true)} className="btn-ghost text-xs">+ Categorie</button>
             <button onClick={() => { setDishForm({ name: '', description: '', category_id: categories[0]?.id?.toString() || '' }); setShowAddDish(true); }} className="btn-primary text-xs">+ Plat</button>
           </div>
@@ -237,6 +276,53 @@ export default function AdminCatalog() {
             </div>
           );
         })}
+        {/* Trash */}
+        {showTrash && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-bold text-lg">Corbeille</h2>
+                <p className="text-gray-400 text-sm">{trashedCats.length + trashedDishes.length} element(s) supprime(s)</p>
+              </div>
+              {(trashedCats.length + trashedDishes.length) > 0 && <button onClick={emptyTrash} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100">Vider la corbeille</button>}
+            </div>
+
+            {trashedCats.length === 0 && trashedDishes.length === 0 ? (
+              <p className="text-center text-gray-400 py-12">La corbeille est vide</p>
+            ) : (
+              <div className="space-y-2">
+                {trashedCats.map(cat => (
+                  <div key={'cat-' + cat.id} className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-3 opacity-60">
+                    <span className="text-xl">{cat.emoji}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{cat.name}</p>
+                      <p className="text-xs text-gray-400">Categorie — supprimee le {new Date(cat.deleted_at).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button onClick={() => restoreCategory(cat.id)} className="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600 hover:bg-green-100">Restaurer</button>
+                      <button onClick={() => permanentDeleteCategory(cat.id)} className="text-[10px] px-2 py-1 rounded-full bg-red-50 text-red-400 hover:bg-red-100">Supprimer</button>
+                    </div>
+                  </div>
+                ))}
+                {trashedDishes.map(dish => {
+                  const cat = [...categories, ...trashedCats].find(c => c.id === dish.category_id);
+                  return (
+                    <div key={'dish-' + dish.id} className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-3 opacity-60">
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">{dish.name}</p>
+                        <p className="text-xs text-gray-400">{cat ? cat.name : 'Categorie inconnue'} — supprime le {new Date(dish.deleted_at).toLocaleDateString('fr-FR')}</p>
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button onClick={() => restoreDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600 hover:bg-green-100">Restaurer</button>
+                        <button onClick={() => permanentDeleteDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-red-50 text-red-400 hover:bg-red-100">Supprimer</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

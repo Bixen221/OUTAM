@@ -204,8 +204,8 @@ export default function Dashboard() {
     setShowAddDish(true);
   }
   async function loadCatalog() {
-    const { data: cats } = await supabase.from('catalog_categories').select('*').order('sort_order');
-    const { data: dsh } = await supabase.from('catalog_dishes').select('*').order('sort_order');
+    const { data: cats } = await supabase.from('catalog_categories').select('*').is('deleted_at', null).order('sort_order');
+    const { data: dsh } = await supabase.from('catalog_dishes').select('*').is('deleted_at', null).order('sort_order');
     const catalog = (cats || []).map(c => ({
       category: c.name, emoji: c.emoji,
       dishes: (dsh || []).filter(d => d.category_id === c.id).map(d => ({ name: d.name, desc: d.description }))
