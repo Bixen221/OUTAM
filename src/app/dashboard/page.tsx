@@ -26,6 +26,10 @@ export default function Dashboard() {
   const [catalogPrices, setCatalogPrices] = useState({});
   const [importing, setImporting] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
+  const [dailySpecials, setDailySpecials] = useState([]);
+  const [showAddSpecial, setShowAddSpecial] = useState(false);
+  const [specialForm, setSpecialForm] = useState({ name: '', description: '', price: '', image: null });
+  const [editSpecial, setEditSpecial] = useState(null);
   const [trashedCats, setTrashedCats] = useState([]);
   const [trashedDishes, setTrashedDishes] = useState([]);
   const [catalogData, setCatalogData] = useState([]);
@@ -48,6 +52,9 @@ export default function Dashboard() {
     setTrashedCats(tCats || []);
     const { data: tDishes } = await supabase.from('dishes').select('*').eq('restaurant_id', resto.id).not('deleted_at', 'is', null);
     setTrashedDishes(tDishes || []);
+    const today = new Date().toISOString().split('T')[0];
+    const { data: specials } = await supabase.from('daily_specials').select('*').eq('restaurant_id', resto.id).gte('valid_date', today).order('created_at', { ascending: false });
+    setDailySpecials(specials || []);
     const { count: total } = await supabase.from('menu_scans').select('*', { count: 'exact', head: true }).eq('restaurant_id', resto.id);
     setScansCount(total || 0);
     const today = new Date().toISOString().split('T')[0];
@@ -212,6 +219,23 @@ export default function Dashboard() {
     setDishForm({ name:'', price:'', description:'', category_id: categories[0]?.id?.toString()||'', image:null, promo_price:'', promo_expires_at:'' });
     setShowAddDish(true);
   }
+  async function saveSpecial() {
+    if (!specialForm.name.trim() || !specialForm.price) { showToast('Remplissez le nom et le prix', 'error'); return; }
+    if (parseInt(specialForm.price) < 0) { showToast('Le prix ne peut pas etre negatif', 'error'); return; }
+    setSaving(true);
+    let imageUrl = editSpecial?.image_url || '';
+    if (specialForm.image) { const compressed = await compressImage(specialForm.image); imageUrl = await uploadImage(compressed); }
+    const data = { restaurant_id: restaurant.id, name: specialForm.name.trim(), description: specialForm.description.trim(), price: parseInt(specialForm.price), image_url: imageUrl, valid_date: new Date().toISOString().split('T')[0] };
+    if (editSpecial) { await supabase.from('daily_specials').update(data).eq('id', editSpecial.id); }
+    else { await supabase.from('daily_specials').insert(data); }
+    setSpecialForm({ name: '', description: '', price: '', image: null }); setShowAddSpecial(false); setEditSpecial(null); setSaving(false); loadData(); showToast(editSpecial ? 'Plat du jour modifie' : 'Plat du jour ajoute');
+  }
+
+  async function deleteSpecial(id) {
+    await supabase.from('daily_specials').delete().eq('id', id);
+    loadData(); showToast('Plat du jour supprime');
+  }
+
   async function loadCatalog() {
     const { data: cats } = await supabase.from('catalog_categories').select('*').is('deleted_at', null).order('sort_order');
     const { data: dsh } = await supabase.from('catalog_dishes').select('*').is('deleted_at', null).order('sort_order');

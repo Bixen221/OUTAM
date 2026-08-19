@@ -20,6 +20,7 @@ export default function MenuPage() {
   const [downloading, setDownloading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [dark, setDark] = useState(true);
+  const [dailySpecials, setDailySpecials] = useState<any[]>([]);
   const [grid, setGrid] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +53,9 @@ export default function MenuPage() {
     setCategories(cats || []);
     const { data: d } = await supabase.from('dishes').select('*').eq('restaurant_id', r.id).eq('is_available', true).is('deleted_at', null).order('sort_order');
     setDishes(d || []);
+    const today = new Date().toISOString().split('T')[0];
+    const { data: specials } = await supabase.from('daily_specials').select('*').eq('restaurant_id', r.id).eq('valid_date', today).eq('is_active', true);
+    setDailySpecials(specials || []);
     setLoading(false);
   }
 
@@ -194,6 +198,35 @@ export default function MenuPage() {
             {categories.map(cat => (
               <button key={cat.id} onClick={() => setActiveCategory(cat.id)} style={{ padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as any, fontFamily: "'Inter',sans-serif", background: activeCategory === cat.id ? G : INPUTBG, color: activeCategory === cat.id ? '#0A0A0A' : TX3, transition: 'all 0.2s' }}>{cat.name}</button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Daily Specials */}
+      {dailySpecials.length > 0 && (
+        <div style={{ maxWidth: 500, margin: '0 auto', padding: '16px 16px 0' }}>
+          <div className="fi" style={{ background: dark ? 'linear-gradient(135deg, #92400E15, #B4530915)' : 'linear-gradient(135deg, #FEF3C7, #FDE68A40)', border: '1px solid ' + (dark ? 'rgba(217,119,6,0.2)' : '#FCD34D'), borderRadius: 16, padding: 16, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, fontSize: 60, opacity: 0.08 }}>🔥</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: 18 }}>🔥</span>
+              <h2 style={{ fontFamily: "'Montserrat',sans-serif", fontSize: 16, fontWeight: 700, color: dark ? '#FBBF24' : '#92400E' }}>Menu du jour</h2>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: dark ? 'rgba(251,191,36,0.15)' : '#FEF3C7', color: dark ? '#FBBF24' : '#92400E', fontWeight: 600 }}>{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {dailySpecials.map((sp: any) => (
+                <div key={sp.id} onClick={() => setSelectedDish({...sp, promo_price: null, promo_expires_at: null})} style={{ background: dark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.8)', borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'all 0.2s', border: '1px solid ' + (dark ? 'rgba(251,191,36,0.1)' : 'rgba(217,119,6,0.1)') }}>
+                  {sp.image_url ? <img src={sp.image_url} alt="" style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 56, height: 56, borderRadius: 10, background: dark ? 'rgba(251,191,36,0.1)' : '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>🔥</div>}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontWeight: 600, fontSize: 14 }}>{sp.name}</p>
+                    {sp.description && <p style={{ fontSize: 11, color: TX2, marginTop: 2 }}>{sp.description}</p>}
+                  </div>
+                  <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                    <p style={{ fontWeight: 700, fontSize: 16, color: dark ? '#FBBF24' : '#92400E' }}>{sp.price.toLocaleString()} F</p>
+                    <button onClick={(e) => { e.stopPropagation(); addC(sp.id); }} style={{ marginTop: 4, width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer', background: dark ? '#FBBF24' : '#D97706', color: dark ? '#0A0A0A' : '#fff', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
