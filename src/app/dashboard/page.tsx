@@ -451,24 +451,11 @@ export default function Dashboard() {
               <h2 style={{ fontWeight: 700, fontSize: 16 }}>Menu du jour</h2>
               <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: '#FEF3C7', color: '#92400E', fontWeight: 600, border: '1px solid #FCD34D' }}>{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
             </div>
-            <button onClick={() => { setEditSpecial(null); setSpecialForm({ name: '', description: '', price: '', image: null }); setShowAddSpecial(true); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 20, background: '#D97706', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ Plat du jour</button>
+            <button onClick={() => setShowAddSpecial(true)} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 20, background: '#D97706', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ Plat du jour</button>
           </div>
 
-          {showAddSpecial && (
-            <div style={{ background: '#fff', borderRadius: 12, padding: 16, border: '1px solid #FCD34D', marginBottom: 12 }}>
-              <h3 className="font-bold text-sm mb-3">{editSpecial ? 'Modifier le plat du jour' : 'Nouveau plat du jour'}</h3>
-              <div className="grid md:grid-cols-2 gap-3">
-                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Nom *</label><input type="text" value={specialForm.name} onChange={e => setSpecialForm({...specialForm, name: e.target.value})} placeholder="ex: Thieboudienne Royal" className="input-field" /></div>
-                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Prix (FCFA) *</label><input type="number" min="0" value={specialForm.price} onChange={e => setSpecialForm({...specialForm, price: e.target.value})} placeholder="3500" className="input-field" /></div>
-                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label><input type="file" accept="image/*" onChange={e => setSpecialForm({...specialForm, image: e.target.files?.[0] || null})} className="input-field text-sm" /></div>
-                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label><input type="text" value={specialForm.description} onChange={e => setSpecialForm({...specialForm, description: e.target.value})} placeholder="Description courte..." className="input-field" /></div>
-              </div>
-              <div className="flex gap-2 mt-3"><button onClick={saveSpecial} disabled={saving} className="btn-primary text-xs">{saving ? '...' : editSpecial ? 'Modifier' : 'Ajouter'}</button><button onClick={() => { setShowAddSpecial(false); setEditSpecial(null); }} className="btn-ghost text-xs">Annuler</button></div>
-            </div>
-          )}
-
           {dailySpecials.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#92400E80', fontSize: 13, padding: '12px 0' }}>Aucun plat du jour. Ajoutez vos specials pour attirer les clients !</p>
+            <p style={{ textAlign: 'center', color: '#92400E80', fontSize: 13, padding: '12px 0' }}>Aucun plat du jour. Appuyez sur + pour selectionner vos specials !</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {dailySpecials.map(sp => (
@@ -479,17 +466,72 @@ export default function Dashboard() {
                     {sp.description && <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>{sp.description}</p>}
                   </div>
                   <span style={{ fontWeight: 700, color: '#D97706', fontSize: 14, flexShrink: 0 }}>{sp.price.toLocaleString()} F</span>
-                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                    <button onClick={() => { setEditSpecial(sp); setSpecialForm({ name: sp.name, description: sp.description || '', price: sp.price.toString(), image: null }); setShowAddSpecial(true); }} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-500">Modifier</button>
-                    <button onClick={() => deleteSpecial(sp.id)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500">x</button>
-                  </div>
+                  <button onClick={() => deleteSpecial(sp.id)} style={{ width: 24, height: 24, borderRadius: '50%', background: '#FEE2E2', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>x</button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-          <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Catégories</h2><button onClick={() => setShowAddCat(true)} className="btn-primary text-xs">+ Catégorie</button></div>
+        {/* Picker Modal - choisir plats du jour */}
+        {showAddSpecial && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowAddSpecial(false)}>
+            <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid #E5E7EB' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h2 style={{ fontWeight: 700, fontSize: 18 }}>Choisir les plats du jour</h2>
+                    <p style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Tapez sur les plats a mettre en special</p>
+                  </div>
+                  <button onClick={() => setShowAddSpecial(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F3F4F6', border: 'none', cursor: 'pointer', fontSize: 16, color: '#6B7280' }}>x</button>
+                </div>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '12px 24px' }}>
+                {/* Existing dishes by category */}
+                {categories.map(cat => {
+                  const catDishes = dishes.filter(d => d.category_id === cat.id);
+                  if (!catDishes.length) return null;
+                  return (
+                    <div key={cat.id} style={{ marginBottom: 16 }}>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{cat.name}</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {catDishes.map(dish => {
+                          const alreadySpecial = dailySpecials.some(s => s.name === dish.name);
+                          return (
+                            <div key={dish.id} onClick={() => { if (!alreadySpecial) { supabase.from('daily_specials').insert({ restaurant_id: restaurant.id, name: dish.name, description: dish.description || '', price: dish.price, image_url: dish.image_url || '', valid_date: new Date().toISOString().split('T')[0] }).then(() => { loadData(); showToast(dish.name + ' ajoute au menu du jour'); }); } }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, cursor: alreadySpecial ? 'default' : 'pointer', background: alreadySpecial ? '#F0FDF4' : '#FAFAFA', border: alreadySpecial ? '1px solid #BBF7D0' : '1px solid #F3F4F6', transition: 'all 0.15s', opacity: alreadySpecial ? 0.7 : 1 }}>
+                              {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 40, height: 40, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🍽️</div>}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 500, fontSize: 13 }}>{dish.name}</p>
+                                <p style={{ fontSize: 11, color: '#9CA3AF' }}>{dish.price.toLocaleString()} F</p>
+                              </div>
+                              {alreadySpecial ? (
+                                <span style={{ fontSize: 11, color: '#16A34A', fontWeight: 600 }}>✓ Ajoute</span>
+                              ) : (
+                                <span style={{ fontSize: 18, color: '#D97706', fontWeight: 700 }}>+</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Add new special */}
+                <div style={{ marginTop: 8, borderTop: '1px solid #E5E7EB', paddingTop: 16 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 8 }}>Ou creer un plat special (pas dans le menu)</p>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input type="text" value={specialForm.name} onChange={e => setSpecialForm({...specialForm, name: e.target.value})} placeholder="Nom du plat" style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 13, outline: 'none' }} />
+                    <input type="number" min="0" value={specialForm.price} onChange={e => setSpecialForm({...specialForm, price: e.target.value})} placeholder="Prix" style={{ width: 80, padding: '8px 12px', borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 13, outline: 'none', textAlign: 'right' }} />
+                    <button onClick={() => { if (specialForm.name.trim() && specialForm.price) { supabase.from('daily_specials').insert({ restaurant_id: restaurant.id, name: specialForm.name.trim(), description: specialForm.description, price: Math.max(0, parseInt(specialForm.price)), image_url: '', valid_date: new Date().toISOString().split('T')[0] }).then(() => { setSpecialForm({name:'', description:'', price:'', image: null}); loadData(); showToast('Plat special ajoute'); }); } else { showToast('Remplissez le nom et le prix', 'error'); }}} style={{ padding: '8px 16px', borderRadius: 8, background: '#D97706', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>Ajouter</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+                  <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Catégories</h2><button onClick={() => setShowAddCat(true)} className="btn-primary text-xs">+ Catégorie</button></div>
           {showAddCat && <div className="bg-white rounded-2xl p-4 border border-brand-200 mb-3 flex gap-2"><input type="text" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="ex: Entrées, Plats, Boissons..." className="input-field flex-1" onKeyDown={(e) => e.key === 'Enter' && addCategory()} autoFocus /><button onClick={addCategory} disabled={saving} className="btn-primary text-xs">{saving ? '...' : 'OK'}</button><button onClick={() => setShowAddCat(false)} className="btn-ghost text-xs">Annuler</button></div>}
           {categories.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucune catégorie.</p> : <div className="flex flex-wrap gap-2">{categories.map((cat) => <div key={cat.id} className="bg-white rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 text-sm"><span className="font-medium">{cat.name}</span><span className="text-gray-400 text-xs">({dishes.filter(d => d.category_id === cat.id).length})</span><button onClick={() => { setEditCatId(cat.id); setEditCatName(cat.name); }} className="text-gray-400 hover:text-brand-500 text-xs">✎</button><button onClick={() => deleteCategory(cat.id)} className="text-red-400 hover:text-red-600 text-xs">×</button></div>)}</div>}
         </div>
