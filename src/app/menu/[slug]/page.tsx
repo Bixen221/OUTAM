@@ -22,6 +22,7 @@ export default function MenuPage() {
   const [dark, setDark] = useState(true);
   const [dailySpecials, setDailySpecials] = useState<any[]>([]);
   const [grid, setGrid] = useState(false);
+  const [tableNum, setTableNum] = useState('');
   const cartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { loadMenu(); }, [slug]);
@@ -83,8 +84,8 @@ export default function MenuPage() {
     doc.text(now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' - ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), w / 2, 28, { align: 'center' });
     doc.setTextColor(30, 30, 30); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
     doc.text('Ma commande', 15, 50);
-    doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.setFont('helvetica', 'normal');
-    doc.text(cItems.length + ' article' + (cItems.length > 1 ? 's' : ''), w - 15, 50, { align: 'right' });
+    if (tableNum) { doc.setTextColor(cr, cg, cb); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('Table ' + tableNum, w - 15, 50, { align: 'right' }); }
+    if (!tableNum) { doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.setFont('helvetica', 'normal'); doc.text(cItems.length + ' article' + (cItems.length > 1 ? 's' : ''), w - 15, 50, { align: 'right' }); }
     doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.3); doc.line(15, 55, w - 15, 55);
     let y = 65;
     cItems.forEach((item: any, i: number) => {
@@ -342,7 +343,7 @@ export default function MenuPage() {
           <button onClick={() => setShowCart(true)} style={{ width: '100%', padding: '16px 20px', borderRadius: 16, background: G, color: '#0A0A0A', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: 'none', cursor: 'pointer', boxShadow: '0 8px 30px rgba(224,205,87,0.25)', fontFamily: "'Inter',sans-serif", fontSize: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800 }}>{cCount}</span>
-              <span>Voir ma commande</span>
+              <span>Voir ma commande{tableNum ? ' · Table ' + tableNum : ''}</span>
             </div>
             <span style={{ fontWeight: 800 }}>{cTotal.toLocaleString()} F</span>
           </button>
