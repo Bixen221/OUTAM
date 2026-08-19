@@ -57,7 +57,6 @@ export default function Dashboard() {
     setDailySpecials(specials || []);
     const { count: total } = await supabase.from('menu_scans').select('*', { count: 'exact', head: true }).eq('restaurant_id', resto.id);
     setScansCount(total || 0);
-    const today = new Date().toISOString().split('T')[0];
     const { count: todayCount } = await supabase.from('menu_scans').select('*', { count: 'exact', head: true }).eq('restaurant_id', resto.id).gte('scanned_at', today);
     setScansToday(todayCount || 0);
     setLoading(false);
@@ -444,6 +443,52 @@ export default function Dashboard() {
           </div>
         </div>
         <div>
+        {/* Menu du jour */}
+        <div style={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', borderRadius: 16, padding: 20, border: '1px solid #FCD34D' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>🔥</span>
+              <h2 style={{ fontWeight: 700, fontSize: 16 }}>Menu du jour</h2>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: '#FEF3C7', color: '#92400E', fontWeight: 600, border: '1px solid #FCD34D' }}>{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+            </div>
+            <button onClick={() => { setEditSpecial(null); setSpecialForm({ name: '', description: '', price: '', image: null }); setShowAddSpecial(true); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 20, background: '#D97706', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>+ Plat du jour</button>
+          </div>
+
+          {showAddSpecial && (
+            <div style={{ background: '#fff', borderRadius: 12, padding: 16, border: '1px solid #FCD34D', marginBottom: 12 }}>
+              <h3 className="font-bold text-sm mb-3">{editSpecial ? 'Modifier le plat du jour' : 'Nouveau plat du jour'}</h3>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Nom *</label><input type="text" value={specialForm.name} onChange={e => setSpecialForm({...specialForm, name: e.target.value})} placeholder="ex: Thieboudienne Royal" className="input-field" /></div>
+                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Prix (FCFA) *</label><input type="number" min="0" value={specialForm.price} onChange={e => setSpecialForm({...specialForm, price: e.target.value})} placeholder="3500" className="input-field" /></div>
+                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label><input type="file" accept="image/*" onChange={e => setSpecialForm({...specialForm, image: e.target.files?.[0] || null})} className="input-field text-sm" /></div>
+                <div><label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label><input type="text" value={specialForm.description} onChange={e => setSpecialForm({...specialForm, description: e.target.value})} placeholder="Description courte..." className="input-field" /></div>
+              </div>
+              <div className="flex gap-2 mt-3"><button onClick={saveSpecial} disabled={saving} className="btn-primary text-xs">{saving ? '...' : editSpecial ? 'Modifier' : 'Ajouter'}</button><button onClick={() => { setShowAddSpecial(false); setEditSpecial(null); }} className="btn-ghost text-xs">Annuler</button></div>
+            </div>
+          )}
+
+          {dailySpecials.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#92400E80', fontSize: 13, padding: '12px 0' }}>Aucun plat du jour. Ajoutez vos specials pour attirer les clients !</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {dailySpecials.map(sp => (
+                <div key={sp.id} style={{ background: '#fff', borderRadius: 12, padding: 12, border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {sp.image_url ? <img src={sp.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 48, height: 48, borderRadius: 10, background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔥</div>}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontWeight: 600, fontSize: 14 }}>{sp.name}</p>
+                    {sp.description && <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>{sp.description}</p>}
+                  </div>
+                  <span style={{ fontWeight: 700, color: '#D97706', fontSize: 14, flexShrink: 0 }}>{sp.price.toLocaleString()} F</span>
+                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <button onClick={() => { setEditSpecial(sp); setSpecialForm({ name: sp.name, description: sp.description || '', price: sp.price.toString(), image: null }); setShowAddSpecial(true); }} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-500">Modifier</button>
+                    <button onClick={() => deleteSpecial(sp.id)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500">x</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
           <div className="flex items-center justify-between mb-3"><h2 className="font-bold text-base">Catégories</h2><button onClick={() => setShowAddCat(true)} className="btn-primary text-xs">+ Catégorie</button></div>
           {showAddCat && <div className="bg-white rounded-2xl p-4 border border-brand-200 mb-3 flex gap-2"><input type="text" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="ex: Entrées, Plats, Boissons..." className="input-field flex-1" onKeyDown={(e) => e.key === 'Enter' && addCategory()} autoFocus /><button onClick={addCategory} disabled={saving} className="btn-primary text-xs">{saving ? '...' : 'OK'}</button><button onClick={() => setShowAddCat(false)} className="btn-ghost text-xs">Annuler</button></div>}
           {categories.length === 0 ? <p className="text-center text-gray-400 py-6 text-sm">Aucune catégorie.</p> : <div className="flex flex-wrap gap-2">{categories.map((cat) => <div key={cat.id} className="bg-white rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 text-sm"><span className="font-medium">{cat.name}</span><span className="text-gray-400 text-xs">({dishes.filter(d => d.category_id === cat.id).length})</span><button onClick={() => { setEditCatId(cat.id); setEditCatName(cat.name); }} className="text-gray-400 hover:text-brand-500 text-xs">✎</button><button onClick={() => deleteCategory(cat.id)} className="text-red-400 hover:text-red-600 text-xs">×</button></div>)}</div>}
