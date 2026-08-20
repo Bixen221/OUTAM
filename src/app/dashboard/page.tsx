@@ -466,15 +466,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Contact support */}
-        {!isPremium && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '10px 0', fontSize: 12, color: '#9CA3AF' }}>
-            <span>Un souci ?</span>
-            <a href="mailto:senecop95@gmail.com" style={{ color: '#3300FF', textDecoration: 'none', fontWeight: 500 }}>senecop95@gmail.com</a>
-            <a href="https://wa.me/221766196090" target="_blank" style={{ color: '#16A34A', textDecoration: 'none', fontWeight: 500 }}>WhatsApp</a>
-          </div>
-        )}
-
         {/* Limits info */}
         {!isPremium && (
           <div style={{ display: 'flex', gap: 8 }}>
