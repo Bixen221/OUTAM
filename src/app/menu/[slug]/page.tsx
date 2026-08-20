@@ -396,6 +396,7 @@ export default function MenuPage() {
                       <input type="text" value={!['1','2','3','4','5','6','7','8','9','10'].includes(tableNum) ? tableNum : ''} onChange={e => setTableNum(e.target.value)} placeholder="Autre" style={{ width: 60, height: 38, borderRadius: 10, border: '1px solid ' + (dark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'), background: 'transparent', color: TX, textAlign: 'center', fontSize: 13, outline: 'none', padding: '0 4px' }} />
                     </div>
                   </div>
+                  )}
 
                   <button onClick={dlPDF} disabled={downloading} style={{ width: '100%', padding: 14, borderRadius: 14, background: G, color: '#0A0A0A', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: downloading ? 0.5 : 1, fontFamily: "'Inter',sans-serif" }}>{downloading ? 'Telechargement...' : 'Telecharger ma commande (PDF)'}</button>
                   <button onClick={clrC} style={{ width: '100%', padding: 12, borderRadius: 14, background: 'transparent', color: TX3, fontWeight: 500, fontSize: 13, border: `1px solid ${CARDB}`, cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>Vider ma commande</button>
