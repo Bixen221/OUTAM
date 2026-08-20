@@ -146,6 +146,7 @@ export default function Dashboard() {
 
   async function addCategory() {
     if (!newCatName.trim() || !restaurant) return;
+    if (!isPremium && categories.length >= maxCategories) { showToast('Limite de ' + maxCategories + ' categories atteinte. Passez au Premium !', 'error'); return; }
     setSaving(true);
     await supabase.from('categories').insert({ restaurant_id: restaurant.id, name: newCatName.trim(), sort_order: categories.length });
     setNewCatName(''); setShowAddCat(false); setSaving(false); loadData(); showToast('Categorie ajoutee');
@@ -189,6 +190,7 @@ export default function Dashboard() {
     return data.publicUrl;
   }
   async function saveDish() {
+    if (!editDish && !isPremium && dishes.length >= maxDishes) { showToast('Limite de ' + maxDishes + ' plats atteinte. Passez au Premium !', 'error'); return; }
     if (!dishForm.name.trim() || !dishForm.price || !dishForm.category_id) { alert('Remplissez le nom, le prix et la catégorie.'); return; }
     setSaving(true);
     let imageUrl = editDish?.image_url || '';
@@ -374,6 +376,10 @@ export default function Dashboard() {
     </div>
   );
   const menuUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant?.slug;
+  const isPremium = restaurant?.plan === 'premium' && restaurant?.premium_expires_at && new Date(restaurant.premium_expires_at) > new Date();
+  const maxDishes = isPremium ? 99999 : 10;
+  const maxCategories = isPremium ? 99999 : 3;
+
   function isPromoActive(dish) { return dish.promo_price && (!dish.promo_expires_at || new Date(dish.promo_expires_at) > new Date()); }
 
   return (
@@ -443,6 +449,33 @@ export default function Dashboard() {
           </div>
         </div>
         <div>
+        {/* Premium banner */}
+        {!isPremium && (
+          <div style={{ background: 'linear-gradient(135deg, #0A0A0A, #1A1917)', borderRadius: 16, padding: 20, border: '1px solid rgba(224,205,87,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 16 }}>👑</span>
+                <h3 style={{ color: '#E0CD57', fontWeight: 700, fontSize: 15 }}>Passez au Premium</h3>
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.5 }}>Plats et categories illimites, numero de table, sans branding Outam.</p>
+              <p style={{ color: '#E0CD57', fontWeight: 700, fontSize: 14, marginTop: 4 }}>8 500 FCFA / an</p>
+            </div>
+            <a href={'https://wa.me/221766196090?text=' + encodeURIComponent('Bonjour, je souhaite souscrire au plan Premium Outam pour mon restaurant ' + (restaurant?.name || '') + '. Slug: ' + (restaurant?.slug || ''))} target="_blank" style={{ padding: '10px 20px', borderRadius: 12, background: '#E0CD57', color: '#0A0A0A', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>Souscrire</a>
+          </div>
+        )}
+
+        {/* Limits info */}
+        {!isPremium && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: categories.length >= maxCategories ? '#FEF2F2' : '#F0FDF4', border: '1px solid ' + (categories.length >= maxCategories ? '#FECACA' : '#BBF7D0'), fontSize: 12 }}>
+              <span style={{ fontWeight: 600 }}>{categories.length}/{maxCategories}</span> <span style={{ color: '#6B7280' }}>categories</span>
+            </div>
+            <div style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: dishes.length >= maxDishes ? '#FEF2F2' : '#F0FDF4', border: '1px solid ' + (dishes.length >= maxDishes ? '#FECACA' : '#BBF7D0'), fontSize: 12 }}>
+              <span style={{ fontWeight: 600 }}>{dishes.length}/{maxDishes}</span> <span style={{ color: '#6B7280' }}>plats</span>
+            </div>
+          </div>
+        )}
+
         {/* Menu du jour */}
         <div style={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', borderRadius: 16, padding: 20, border: '1px solid #FCD34D' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>

@@ -34,6 +34,28 @@ export default function AdminDashboard() {
     setLoading(false);
   }
 
+  async function togglePremium(id, currentPlan) {
+    if (currentPlan === 'premium') {
+      await supabase.from('restaurants').update({ plan: 'free', premium_expires_at: null }).eq('id', id);
+      loadAll(); showToast('Premium desactive');
+    } else {
+      const expires = new Date();
+      expires.setFullYear(expires.getFullYear() + 1);
+      await supabase.from('restaurants').update({ plan: 'premium', premium_expires_at: expires.toISOString() }).eq('id', id);
+      loadAll(); showToast('Premium active pour 1 an');
+    }
+  }
+
+  function showToast(msg) {
+    let container = document.getElementById('toast-container');
+    if (!container) { container = document.createElement('div'); container.id = 'toast-container'; container.className = 'toast-container'; document.body.appendChild(container); }
+    const t = document.createElement('div');
+    t.className = 'toast toast-success';
+    t.textContent = '✓ ' + msg;
+    container.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
   async function deleteRestaurant(id, name) {
     if (!confirm('Supprimer "' + name + '" et tous ses plats ?')) return;
     await supabase.from('dishes').delete().eq('restaurant_id', id);
@@ -133,6 +155,7 @@ export default function AdminDashboard() {
                     <p className="text-[10px] text-gray-300 mt-0.5">/{r.slug} · {new Date(r.created_at).toLocaleDateString('fr-FR')}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    <button onClick={() => togglePremium(r.id, r.plan)} style={{ fontSize: 10, padding: '4px 10px', borderRadius: 8, background: r.plan === 'premium' ? '#FEF3C7' : '#F3F4F6', color: r.plan === 'premium' ? '#92400E' : '#6B7280', border: 'none', cursor: 'pointer', fontWeight: 500 }}>{r.plan === 'premium' ? 'Retirer Premium' : 'Activer Premium'}</button>
                     <Link href={'/menu/' + r.slug} target="_blank" className="btn-ghost text-xs">Menu</Link>
                     <button onClick={() => deleteRestaurant(r.id, r.name)} className="btn-danger text-xs">Supprimer</button>
                   </div>

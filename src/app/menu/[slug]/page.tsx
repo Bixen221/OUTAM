@@ -107,6 +107,7 @@ export default function MenuPage() {
 
   // Theme colors
   const G = restaurant?.theme_color || '#E0CD57';
+  const isPremium = restaurant?.plan === 'premium' && restaurant?.premium_expires_at && new Date(restaurant.premium_expires_at) > new Date();
   const BG = dark ? '#0A0A0A' : '#FAFAF8';
   const TX = dark ? '#ffffff' : '#1A1917';
   const TX2 = dark ? 'rgba(255,255,255,0.45)' : '#6B7280';
@@ -385,7 +386,7 @@ export default function MenuPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' as any, gap: 10 }}>
                   {/* Table number - PREMIUM FEATURE */}
-                  {false && (
+                  {isPremium && (
                   <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, background: dark ? 'rgba(255,255,255,0.04)' : '#F9FAFB', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.08)' : '#E5E7EB') }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: TX2, marginBottom: 8 }}>Numero de table (facultatif)</p>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -406,7 +407,7 @@ export default function MenuPage() {
       )}
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '24px 0', fontSize: 11, color: TX3 }}>Menu cree avec <a href="/" style={{ color: G, textDecoration: 'none' }}>Outam</a></div>
+      {!isPremium && <div style={{ textAlign: 'center', padding: '24px 0', fontSize: 11, color: TX3 }}>Menu cree avec <a href="/" style={{ color: G, textDecoration: 'none' }}>Outam</a></div>}
     </div>
   );
 }
