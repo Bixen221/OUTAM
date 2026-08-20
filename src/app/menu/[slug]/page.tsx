@@ -85,6 +85,7 @@ export default function MenuPage() {
     doc.setTextColor(30, 30, 30); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
     doc.text('Ma commande', 15, 50);
     if (tableNum) { doc.setTextColor(cr, cg, cb); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('Table ' + tableNum, w - 15, 50, { align: 'right' }); }
+    if (tableNum) { doc.setTextColor(cr, cg, cb); doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.text('Table ' + tableNum, w - 15, 50, { align: 'right' }); }
     if (!tableNum) { doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.setFont('helvetica', 'normal'); doc.text(cItems.length + ' article' + (cItems.length > 1 ? 's' : ''), w - 15, 50, { align: 'right' }); }
     doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.3); doc.line(15, 55, w - 15, 55);
     let y = 65;
@@ -383,6 +384,17 @@ export default function MenuPage() {
                   <span style={{ fontWeight: 800, fontSize: 22, color: G }}>{cTotal.toLocaleString()} FCFA</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' as any, gap: 10 }}>
+                  {/* Table number */}
+                  <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, background: dark ? 'rgba(255,255,255,0.04)' : '#F9FAFB', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.08)' : '#E5E7EB') }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: TX2, marginBottom: 8 }}>Numero de table (facultatif)</p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {['1','2','3','4','5','6','7','8','9','10'].map(n => (
+                        <button key={n} onClick={() => setTableNum(tableNum === n ? '' : n)} style={{ width: 38, height: 38, borderRadius: 10, border: tableNum === n ? '2px solid ' + G : '1px solid ' + (dark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'), background: tableNum === n ? G + '20' : 'transparent', color: tableNum === n ? G : TX2, fontWeight: 600, fontSize: 14, cursor: 'pointer', transition: 'all 0.15s' }}>{n}</button>
+                      ))}
+                      <input type="text" value={!['1','2','3','4','5','6','7','8','9','10'].includes(tableNum) ? tableNum : ''} onChange={e => setTableNum(e.target.value)} placeholder="Autre" style={{ width: 60, height: 38, borderRadius: 10, border: '1px solid ' + (dark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'), background: 'transparent', color: TX, textAlign: 'center', fontSize: 13, outline: 'none', padding: '0 4px' }} />
+                    </div>
+                  </div>
+
                   <button onClick={dlPDF} disabled={downloading} style={{ width: '100%', padding: 14, borderRadius: 14, background: G, color: '#0A0A0A', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: downloading ? 0.5 : 1, fontFamily: "'Inter',sans-serif" }}>{downloading ? 'Telechargement...' : 'Telecharger ma commande (PDF)'}</button>
                   <button onClick={clrC} style={{ width: '100%', padding: 12, borderRadius: 14, background: 'transparent', color: TX3, fontWeight: 500, fontSize: 13, border: `1px solid ${CARDB}`, cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>Vider ma commande</button>
                 </div>
