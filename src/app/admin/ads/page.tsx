@@ -37,7 +37,7 @@ export default function AdminAds() {
     setLoading(false);
   }
 
-  function showToast(msg, type) {
+  function showToast(msg, type = 'success') {
     let c = document.getElementById('toast-container');
     if (!c) { c = document.createElement('div'); c.id = 'toast-container'; c.className = 'toast-container'; document.body.appendChild(c); }
     const t = document.createElement('div');
