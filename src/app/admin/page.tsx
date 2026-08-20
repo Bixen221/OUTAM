@@ -91,6 +91,7 @@ export default function AdminDashboard() {
               <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-900 shadow-sm">Restaurants</span>
               <Link href="/admin/analytics" className="px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white">Analytics</Link>
               <Link href="/admin/catalog" className="px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white">Catalogue</Link>
+              <Link href="/admin/ads" className="px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white">Publicites</Link>
             </div>
             <Link href="/dashboard" className="text-xs text-gray-400 hover:text-white hidden sm:inline">Mon resto</Link>
           </div>

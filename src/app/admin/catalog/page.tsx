@@ -142,6 +142,7 @@ export default function AdminCatalog() {
             <Link href="/admin" className="px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white">Restaurants</Link>
             <Link href="/admin/analytics" className="px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white">Analytics</Link>
             <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-900 shadow-sm">Catalogue</span>
+              <Link href="/admin/ads" className="px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white">Publicites</Link>
           </div>
         </div>
       </header>

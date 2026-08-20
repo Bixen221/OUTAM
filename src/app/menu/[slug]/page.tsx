@@ -21,6 +21,8 @@ export default function MenuPage() {
   const [isOffline, setIsOffline] = useState(false);
   const [dark, setDark] = useState(true);
   const [dailySpecials, setDailySpecials] = useState<any[]>([]);
+  const [ads, setAds] = useState<any[]>([]);
+  const [adImages, setAdImages] = useState<any[]>([]);
   const [grid, setGrid] = useState(false);
   const [tableNum, setTableNum] = useState('');
   const cartRef = useRef<HTMLDivElement>(null);
@@ -57,6 +59,14 @@ export default function MenuPage() {
     const today = new Date().toISOString().split('T')[0];
     const { data: specials } = await supabase.from('daily_specials').select('*').eq('restaurant_id', r.id).eq('valid_date', today).eq('is_active', true);
     setDailySpecials(specials || []);
+    const { data: activeAds } = await supabase.from('ads').select('*').eq('is_active', true).order('priority', { ascending: false });
+    const validAds = (activeAds || []).filter(a => !a.expires_at || new Date(a.expires_at) >= new Date());
+    setAds(validAds);
+    if (validAds.length > 0) {
+      const { data: imgs } = await supabase.from('ad_images').select('*').order('sort_order');
+      setAdImages(imgs || []);
+      for (const ad of validAds) { supabase.from('ad_impressions').insert({ ad_id: ad.id, restaurant_id: r.id }); }
+    }
     setLoading(false);
   }
 
@@ -404,6 +414,34 @@ export default function MenuPage() {
               </>)}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Ads - only for free plan */}
+      {!isPremium && ads.length > 0 && (
+        <div style={{ maxWidth: 500, margin: '0 auto', padding: '0 16px 16px' }}>
+          {ads.map(ad => {
+            const imgs = adImages.filter(i => i.ad_id === ad.id);
+            return (
+              <div key={ad.id} style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#fff', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.06)' : '#E5E7EB'), borderRadius: 14, overflow: 'hidden', marginBottom: 10 }}>
+                {imgs.length > 0 && (
+                  <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 0 }}>
+                    {imgs.map(img => (
+                      <img key={img.id} src={img.image_url} alt="" style={{ width: imgs.length === 1 ? '100%' : '75%', height: 140, objectFit: 'cover', flexShrink: 0 }} />
+                    ))}
+                  </div>
+                )}
+                <div style={{ padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: dark ? 'rgba(255,255,255,0.06)' : '#F3F4F6', color: TX3 }}>Sponsorise</span>
+                  </div>
+                  <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ad.title}</p>
+                  {ad.description && <p style={{ fontSize: 12, color: TX2, lineHeight: 1.5 }}>{ad.description}</p>}
+                  <p style={{ fontSize: 11, color: TX3, marginTop: 4 }}>{ad.advertiser_name}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
