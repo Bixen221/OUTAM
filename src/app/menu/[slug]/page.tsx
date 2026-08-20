@@ -425,10 +425,15 @@ export default function MenuPage() {
             return (
               <div key={ad.id} style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#fff', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.06)' : '#E5E7EB'), borderRadius: 14, overflow: 'hidden', marginBottom: 10 }}>
                 {imgs.length > 0 && (
-                  <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 0 }}>
-                    {imgs.map(img => (
-                      <img key={img.id} src={img.image_url} alt="" style={{ width: imgs.length === 1 ? '100%' : '75%', height: 140, objectFit: 'cover', flexShrink: 0 }} />
-                    ))}
+                  <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 2, scrollSnapType: 'x mandatory' }}>
+                    {imgs.map(img => {
+                      const isVideo = img.image_url.endsWith('.mp4') || img.image_url.endsWith('.webm');
+                      return isVideo ? (
+                        <video key={img.id} autoPlay muted loop playsInline style={{ width: '100%', maxHeight: 200, objectFit: 'contain', flexShrink: 0, scrollSnapAlign: 'start', background: dark ? '#111' : '#F3F4F6' }} src={img.image_url} />
+                      ) : (
+                        <img key={img.id} src={img.image_url} alt="" style={{ width: imgs.length === 1 ? '100%' : '80%', maxHeight: 200, objectFit: 'contain', flexShrink: 0, scrollSnapAlign: 'start', background: dark ? '#111' : '#F3F4F6' }} />
+                      );
+                    })}
                   </div>
                 )}
                 <div style={{ padding: '12px 14px' }}>
