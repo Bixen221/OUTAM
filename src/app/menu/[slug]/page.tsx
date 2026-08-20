@@ -384,7 +384,8 @@ export default function MenuPage() {
                   <span style={{ fontWeight: 800, fontSize: 22, color: G }}>{cTotal.toLocaleString()} FCFA</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' as any, gap: 10 }}>
-                  {/* Table number */}
+                  {/* Table number - PREMIUM FEATURE */}
+                  {false && (
                   <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, background: dark ? 'rgba(255,255,255,0.04)' : '#F9FAFB', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.08)' : '#E5E7EB') }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: TX2, marginBottom: 8 }}>Numero de table (facultatif)</p>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
