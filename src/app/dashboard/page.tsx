@@ -221,6 +221,7 @@ export default function Dashboard() {
     setShowAddDish(true);
   }
   async function saveSpecial() {
+    if (!editSpecial && !isPremium && dailySpecials.length >= maxSpecials) { showToast('Limite de ' + maxSpecials + ' plats du jour atteinte. Passez au Premium !', 'error'); return; }
     if (!specialForm.name.trim() || !specialForm.price) { showToast('Remplissez le nom et le prix', 'error'); return; }
     if (parseInt(specialForm.price) < 0) { showToast('Le prix ne peut pas etre negatif', 'error'); return; }
     setSaving(true);
@@ -379,6 +380,7 @@ export default function Dashboard() {
   const isPremium = restaurant?.plan === 'premium' && restaurant?.premium_expires_at && new Date(restaurant.premium_expires_at) > new Date();
   const maxDishes = isPremium ? 99999 : 10;
   const maxCategories = isPremium ? 99999 : 3;
+  const maxSpecials = isPremium ? 99999 : 2;
 
   function isPromoActive(dish) { return dish.promo_price && (!dish.promo_expires_at || new Date(dish.promo_expires_at) > new Date()); }
 
@@ -457,10 +459,19 @@ export default function Dashboard() {
                 <span style={{ fontSize: 16 }}>👑</span>
                 <h3 style={{ color: '#E0CD57', fontWeight: 700, fontSize: 15 }}>Passez au Premium</h3>
               </div>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.5 }}>Plats et categories illimites, numero de table, sans branding Outam.</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.5 }}>Plats et categories illimites, plats du jour illimites, numero de table, sans branding Outam.</p>
               <p style={{ color: '#E0CD57', fontWeight: 700, fontSize: 14, marginTop: 4 }}>8 500 FCFA / an</p>
             </div>
             <a href={'https://wa.me/221766196090?text=' + encodeURIComponent('Bonjour, je souhaite souscrire au plan Premium Outam pour mon restaurant ' + (restaurant?.name || '') + '. Slug: ' + (restaurant?.slug || ''))} target="_blank" style={{ padding: '10px 20px', borderRadius: 12, background: '#E0CD57', color: '#0A0A0A', fontWeight: 700, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>Souscrire</a>
+          </div>
+        )}
+
+        {/* Contact support */}
+        {!isPremium && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '10px 0', fontSize: 12, color: '#9CA3AF' }}>
+            <span>Un souci ?</span>
+            <a href="mailto:senecop95@gmail.com" style={{ color: '#3300FF', textDecoration: 'none', fontWeight: 500 }}>senecop95@gmail.com</a>
+            <a href="https://wa.me/221766196090" target="_blank" style={{ color: '#16A34A', textDecoration: 'none', fontWeight: 500 }}>WhatsApp</a>
           </div>
         )}
 
@@ -472,6 +483,9 @@ export default function Dashboard() {
             </div>
             <div style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: dishes.length >= maxDishes ? '#FEF2F2' : '#F0FDF4', border: '1px solid ' + (dishes.length >= maxDishes ? '#FECACA' : '#BBF7D0'), fontSize: 12 }}>
               <span style={{ fontWeight: 600 }}>{dishes.length}/{maxDishes}</span> <span style={{ color: '#6B7280' }}>plats</span>
+            </div>
+            <div style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: dailySpecials.length >= maxSpecials ? '#FEF2F2' : '#F0FDF4', border: '1px solid ' + (dailySpecials.length >= maxSpecials ? '#FECACA' : '#BBF7D0'), fontSize: 12 }}>
+              <span style={{ fontWeight: 600 }}>{dailySpecials.length}/{maxSpecials}</span> <span style={{ color: '#6B7280' }}>plats du jour</span>
             </div>
           </div>
         )}
@@ -531,7 +545,7 @@ export default function Dashboard() {
                         {catDishes.map(dish => {
                           const alreadySpecial = dailySpecials.some(s => s.name === dish.name);
                           return (
-                            <div key={dish.id} onClick={() => { if (!alreadySpecial) { supabase.from('daily_specials').insert({ restaurant_id: restaurant.id, name: dish.name, description: dish.description || '', price: dish.price, image_url: dish.image_url || '', valid_date: new Date().toISOString().split('T')[0] }).then(() => { loadData(); showToast(dish.name + ' ajoute au menu du jour'); }); } }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, cursor: alreadySpecial ? 'default' : 'pointer', background: alreadySpecial ? '#F0FDF4' : '#FAFAFA', border: alreadySpecial ? '1px solid #BBF7D0' : '1px solid #F3F4F6', transition: 'all 0.15s', opacity: alreadySpecial ? 0.7 : 1 }}>
+                            <div key={dish.id} onClick={() => { if (!alreadySpecial) { if (!isPremium && dailySpecials.length >= maxSpecials) { showToast('Limite de ' + maxSpecials + ' plats du jour. Passez au Premium !', 'error'); return; } supabase.from('daily_specials').insert({ restaurant_id: restaurant.id, name: dish.name, description: dish.description || '', price: dish.price, image_url: dish.image_url || '', valid_date: new Date().toISOString().split('T')[0] }).then(() => { loadData(); showToast(dish.name + ' ajoute au menu du jour'); }); } }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, cursor: alreadySpecial ? 'default' : 'pointer', background: alreadySpecial ? '#F0FDF4' : '#FAFAFA', border: alreadySpecial ? '1px solid #BBF7D0' : '1px solid #F3F4F6', transition: 'all 0.15s', opacity: alreadySpecial ? 0.7 : 1 }}>
                               {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 40, height: 40, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🍽️</div>}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p style={{ fontWeight: 500, fontSize: 13 }}>{dish.name}</p>
