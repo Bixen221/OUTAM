@@ -117,6 +117,15 @@ export default function MenuPage() {
 
   // Theme colors
   const G = restaurant?.theme_color || '#E0CD57';
+  // Auto contrast: white text on dark colors, black text on light colors
+  function contrastText(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#0A0A0A' : '#FFFFFF';
+  }
+  const GText = contrastText(G);
   const isPremium = restaurant?.plan === 'premium' && restaurant?.premium_expires_at && new Date(restaurant.premium_expires_at) > new Date();
   const BG = dark ? '#0A0A0A' : '#FAFAF8';
   const TX = dark ? '#ffffff' : '#1A1917';
@@ -207,9 +216,9 @@ export default function MenuPage() {
       {categories.length > 1 && (
         <div style={{ maxWidth: 500, margin: '16px auto 0', padding: '8px 16px', position: 'sticky', top: 0, zIndex: 30, background: BG, transition: 'background 0.4s' }}>
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' as any }}>
-            <button onClick={() => setActiveCategory(null)} style={{ padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as any, fontFamily: "'Inter',sans-serif", background: !activeCategory ? G : INPUTBG, color: !activeCategory ? '#0A0A0A' : TX3, transition: 'all 0.2s' }}>Tout</button>
+            <button onClick={() => setActiveCategory(null)} style={{ padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as any, fontFamily: "'Inter',sans-serif", background: !activeCategory ? G : INPUTBG, color: !activeCategory ? GText : TX3, transition: 'all 0.2s' }}>Tout</button>
             {categories.map(cat => (
-              <button key={cat.id} onClick={() => setActiveCategory(cat.id)} style={{ padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as any, fontFamily: "'Inter',sans-serif", background: activeCategory === cat.id ? G : INPUTBG, color: activeCategory === cat.id ? '#0A0A0A' : TX3, transition: 'all 0.2s' }}>{cat.name}</button>
+              <button key={cat.id} onClick={() => setActiveCategory(cat.id)} style={{ padding: '8px 18px', borderRadius: 50, fontSize: 13, fontWeight: 500, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as any, fontFamily: "'Inter',sans-serif", background: activeCategory === cat.id ? G : INPUTBG, color: activeCategory === cat.id ? GText : TX3, transition: 'all 0.2s' }}>{cat.name}</button>
             ))}
           </div>
         </div>
@@ -266,7 +275,7 @@ export default function MenuPage() {
                         <div style={{ width: '100%', height: 100, background: dark ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' : 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🍽️</div>
                       )}
                       {pro && <div style={{ position: 'absolute', top: 8, right: 8, padding: '2px 6px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: 'rgba(224,205,87,0.2)', color: G }}>PROMO</div>}
-                      {ic > 0 && <div style={{ position: 'absolute', top: 8, left: 8, width: 22, height: 22, borderRadius: '50%', background: G, color: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ic}</div>}
+                      {ic > 0 && <div style={{ position: 'absolute', top: 8, left: 8, width: 22, height: 22, borderRadius: '50%', background: G, color: GText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{ic}</div>}
                       <div style={{ padding: '10px 12px' }}>
                         <h3 style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</h3>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -275,7 +284,7 @@ export default function MenuPage() {
                           ) : (
                             <span style={{ color: dark ? '#FBBF24' : PRC, fontWeight: 700, fontSize: 14 }}>{dish.price.toLocaleString()} F</span>
                           )}
-                          <button onClick={(e) => { e.stopPropagation(); addC(dish.id); }} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, border: 'none', cursor: 'pointer', background: G, color: '#0A0A0A', fontWeight: 700 }}>+</button>
+                          <button onClick={(e) => { e.stopPropagation(); addC(dish.id); }} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, border: 'none', cursor: 'pointer', background: G, color: GText, fontWeight: 700 }}>+</button>
                         </div>
                       </div>
                     </div>
@@ -290,7 +299,7 @@ export default function MenuPage() {
                         <img src={dish.image_url} alt="" style={{ width: '100%', height: 180, objectFit: 'contain', display: 'block', background: IMGBG }} />
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: dark ? 'linear-gradient(transparent, rgba(0,0,0,0.6))' : 'linear-gradient(transparent, rgba(0,0,0,0.05))' }} />
                         {pro && <div style={{ position: 'absolute', top: 10, right: 10, padding: '3px 8px', borderRadius: 20, fontSize: 10, fontWeight: 700, background: 'rgba(224,205,87,0.15)', color: G, border: '1px solid rgba(224,205,87,0.2)' }}>PROMO</div>}
-                        {ic > 0 && <div style={{ position: 'absolute', top: 10, left: 10, width: 24, height: 24, borderRadius: '50%', background: G, color: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{ic}</div>}
+                        {ic > 0 && <div style={{ position: 'absolute', top: 10, left: 10, width: 24, height: 24, borderRadius: '50%', background: G, color: GText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{ic}</div>}
                       </div>
                     ) : (
                       <div onClick={() => setSelectedDish(dish)} style={{ cursor: 'pointer', height: 100, background: IMGBG, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, position: 'relative' }}>🍽️</div>
@@ -308,10 +317,10 @@ export default function MenuPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <button onClick={() => remC(dish.id)} style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: 'none', cursor: 'pointer', background: BTNBG, color: BTNC, fontFamily: "'Inter',sans-serif" }}>-</button>
                             <span style={{ width: 22, textAlign: 'center' as any, fontWeight: 700, fontSize: 14, color: G }}>{ic}</span>
-                            <button onClick={() => addC(dish.id)} style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: 'none', cursor: 'pointer', background: G, color: '#0A0A0A', fontFamily: "'Inter',sans-serif" }}>+</button>
+                            <button onClick={() => addC(dish.id)} style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: 'none', cursor: 'pointer', background: G, color: GText, fontFamily: "'Inter',sans-serif" }}>+</button>
                           </div>
                         ) : (
-                          <button onClick={() => addC(dish.id)} style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: 'none', cursor: 'pointer', background: G, color: '#0A0A0A', fontWeight: 700, fontFamily: "'Inter',sans-serif" }}>+</button>
+                          <button onClick={() => addC(dish.id)} style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: 'none', cursor: 'pointer', background: G, color: GText, fontWeight: 700, fontFamily: "'Inter',sans-serif" }}>+</button>
                         )}
                       </div>
                     </div>
@@ -343,7 +352,7 @@ export default function MenuPage() {
                 <p style={{ color: PRC, fontWeight: 800, fontSize: 26, marginBottom: 16 }}>{selectedDish.price.toLocaleString()} FCFA</p>
               )}
               {selectedDish.description && <p style={{ color: TX2, fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>{selectedDish.description}</p>}
-              <button onClick={() => { addC(selectedDish.id); setSelectedDish(null); }} style={{ width: '100%', padding: 14, borderRadius: 14, background: G, color: '#0A0A0A', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>Ajouter a ma commande</button>
+              <button onClick={() => { addC(selectedDish.id); setSelectedDish(null); }} style={{ width: '100%', padding: 14, borderRadius: 14, background: G, color: GText, fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>Ajouter a ma commande</button>
             </div>
           </div>
         </div>
@@ -352,9 +361,9 @@ export default function MenuPage() {
       {/* Cart button */}
       {cCount > 0 && !showCart && (
         <div style={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 40, maxWidth: 500, margin: '0 auto' }}>
-          <button onClick={() => setShowCart(true)} style={{ width: '100%', padding: '16px 20px', borderRadius: 16, background: G, color: '#0A0A0A', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: 'none', cursor: 'pointer', boxShadow: '0 8px 30px rgba(224,205,87,0.25)', fontFamily: "'Inter',sans-serif", fontSize: 14 }}>
+          <button onClick={() => setShowCart(true)} style={{ width: '100%', padding: '16px 20px', borderRadius: 16, background: G, color: GText, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: 'none', cursor: 'pointer', boxShadow: '0 8px 30px rgba(224,205,87,0.25)', fontFamily: "'Inter',sans-serif", fontSize: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800 }}>{cCount}</span>
+              <span style={{ width: 28, height: 28, borderRadius: '50%', background: GText === '#FFFFFF' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800 }}>{cCount}</span>
               <span>Voir ma commande{tableNum ? ' · Table ' + tableNum : ''}</span>
             </div>
             <span style={{ fontWeight: 800 }}>{cTotal.toLocaleString()} F</span>
@@ -380,7 +389,7 @@ export default function MenuPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         <button onClick={() => remC(item.id)} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, border: 'none', cursor: 'pointer', background: BTNBG, color: BTNC }}>-</button>
                         <span style={{ width: 20, textAlign: 'center' as any, fontWeight: 700, fontSize: 13, color: G }}>{item.qty}</span>
-                        <button onClick={() => addC(item.id)} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, border: 'none', cursor: 'pointer', background: G, color: '#0A0A0A' }}>+</button>
+                        <button onClick={() => addC(item.id)} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, border: 'none', cursor: 'pointer', background: G, color: GText }}>+</button>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontWeight: 500, fontSize: 14 }}>{item.name}</p>
@@ -408,7 +417,7 @@ export default function MenuPage() {
                   </div>
                   )}
 
-                  <button onClick={dlPDF} disabled={downloading} style={{ width: '100%', padding: 14, borderRadius: 14, background: G, color: '#0A0A0A', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: downloading ? 0.5 : 1, fontFamily: "'Inter',sans-serif" }}>{downloading ? 'Telechargement...' : 'Telecharger ma commande (PDF)'}</button>
+                  <button onClick={dlPDF} disabled={downloading} style={{ width: '100%', padding: 14, borderRadius: 14, background: G, color: GText, fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: downloading ? 0.5 : 1, fontFamily: "'Inter',sans-serif" }}>{downloading ? 'Telechargement...' : 'Telecharger ma commande (PDF)'}</button>
                   <button onClick={clrC} style={{ width: '100%', padding: 12, borderRadius: 14, background: 'transparent', color: TX3, fontWeight: 500, fontSize: 13, border: `1px solid ${CARDB}`, cursor: 'pointer', fontFamily: "'Inter',sans-serif" }}>Vider ma commande</button>
                 </div>
               </>)}
