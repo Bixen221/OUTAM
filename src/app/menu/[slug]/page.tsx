@@ -434,18 +434,34 @@ export default function MenuPage() {
             const imgs = adImages.filter(i => i.ad_id === ad.id);
             return (
               <div key={ad.id} style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#fff', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.06)' : '#E5E7EB'), borderRadius: 14, overflow: 'hidden', minWidth: ads.length > 1 ? '85%' : '100%', flexShrink: 0, scrollSnapAlign: 'start' }}>
-                {imgs.length > 0 && (
-                  <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 2, scrollSnapType: 'x mandatory' }}>
-                    {imgs.map(img => {
-                      const isVideo = img.image_url.endsWith('.mp4') || img.image_url.endsWith('.webm');
-                      return isVideo ? (
-                        <video key={img.id} autoPlay muted loop playsInline style={{ width: '100%', maxHeight: 200, objectFit: 'contain', flexShrink: 0, scrollSnapAlign: 'start', background: dark ? '#111' : '#F3F4F6' }} src={img.image_url} />
-                      ) : (
-                        <img key={img.id} src={img.image_url} alt="" style={{ width: imgs.length === 1 ? '100%' : '80%', maxHeight: 200, objectFit: 'contain', flexShrink: 0, scrollSnapAlign: 'start', background: dark ? '#111' : '#F3F4F6' }} />
-                      );
-                    })}
-                  </div>
-                )}
+                {imgs.length > 0 && (() => {
+                  const isVideo = imgs[0].image_url.endsWith('.mp4') || imgs[0].image_url.endsWith('.webm');
+                  if (isVideo) {
+                    return <video autoPlay muted loop playsInline style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: dark ? '#111' : '#F3F4F6' }} src={imgs[0].image_url} />;
+                  }
+                  if (imgs.length === 1) {
+                    return <img src={imgs[0].image_url} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: dark ? '#111' : '#F3F4F6' }} />;
+                  }
+                  // Multiple images: auto-sliding carousel
+                  const AdCarousel = () => {
+                    const [idx, setIdx] = useState(0);
+                    useEffect(() => {
+                      const timer = setInterval(() => setIdx(p => (p + 1) % imgs.length), 3000);
+                      return () => clearInterval(timer);
+                    }, []);
+                    return (
+                      <div style={{ position: 'relative', overflow: 'hidden' }}>
+                        <img src={imgs[idx].image_url} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: dark ? '#111' : '#F3F4F6', transition: 'opacity 0.5s' }} />
+                        <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 4 }}>
+                          {imgs.map((_, i) => (
+                            <div key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }} style={{ width: i === idx ? 16 : 6, height: 6, borderRadius: 3, background: i === idx ? '#fff' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s', cursor: 'pointer' }} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  };
+                  return <AdCarousel />;
+                })()}
                 <div style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: dark ? 'rgba(255,255,255,0.06)' : '#F3F4F6', color: TX3 }}>Sponsorise</span>
