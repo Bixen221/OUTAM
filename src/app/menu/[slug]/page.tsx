@@ -227,7 +227,7 @@ export default function MenuPage() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {dailySpecials.map((sp: any) => (
-                <div key={sp.id} onClick={() => setSelectedDish({...sp, promo_price: null, promo_expires_at: null})} style={{ background: dark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.8)', borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'all 0.2s', border: '1px solid ' + (dark ? 'rgba(251,191,36,0.1)' : 'rgba(217,119,6,0.1)') }}>
+                <div key={sp.id} onClick={() => setSelectedDish({...sp, price: sp.price, promo_price: null, promo_expires_at: null, image_url: sp.image_url || ''})} style={{ background: dark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.8)', borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'all 0.2s', border: '1px solid ' + (dark ? 'rgba(251,191,36,0.1)' : 'rgba(217,119,6,0.1)') }}>
                   {sp.image_url ? <img src={sp.image_url} alt="" style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 56, height: 56, borderRadius: 10, background: dark ? 'rgba(251,191,36,0.1)' : '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>🔥</div>}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 600, fontSize: 14 }}>{sp.name}</p>
@@ -235,7 +235,7 @@ export default function MenuPage() {
                   </div>
                   <div style={{ flexShrink: 0, textAlign: 'right' }}>
                     <p style={{ fontWeight: 700, fontSize: 16, color: dark ? '#FBBF24' : '#92400E' }}>{sp.price.toLocaleString()} F</p>
-                    <button onClick={(e) => { e.stopPropagation(); addC(sp.id); }} style={{ marginTop: 4, width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer', background: dark ? '#FBBF24' : '#D97706', color: dark ? '#0A0A0A' : '#fff', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</button>
+                    <button onClick={(e) => { e.stopPropagation(); const existingDish = dishes.find(d => d.name === sp.name); if (existingDish) { addC(existingDish.id); } else { addC(sp.id); } }} style={{ marginTop: 4, width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer', background: dark ? '#FBBF24' : '#D97706', color: dark ? '#0A0A0A' : '#fff', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>+</button>
                   </div>
                 </div>
               ))}
@@ -271,9 +271,9 @@ export default function MenuPage() {
                         <h3 style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, lineHeight: 1.3 }}>{dish.name}</h3>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           {pro ? (
-                            <div><span style={{ color: TX3, fontSize: 11, textDecoration: 'line-through', marginRight: 4 }}>{dish.price.toLocaleString()}</span><span style={{ color: G, fontWeight: 700, fontSize: 14 }}>{dish.promo_price.toLocaleString()} F</span></div>
+                            <div><span style={{ color: TX3, fontSize: 11, textDecoration: 'line-through', marginRight: 4 }}>{dish.price.toLocaleString()}</span><span style={{ color: dark ? '#FBBF24' : G, fontWeight: 700, fontSize: 14 }}>{dish.promo_price.toLocaleString()} F</span></div>
                           ) : (
-                            <span style={{ color: PRC, fontWeight: 700, fontSize: 14 }}>{dish.price.toLocaleString()} F</span>
+                            <span style={{ color: dark ? '#FBBF24' : PRC, fontWeight: 700, fontSize: 14 }}>{dish.price.toLocaleString()} F</span>
                           )}
                           <button onClick={(e) => { e.stopPropagation(); addC(dish.id); }} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, border: 'none', cursor: 'pointer', background: G, color: '#0A0A0A', fontWeight: 700 }}>+</button>
                         </div>
@@ -300,7 +300,7 @@ export default function MenuPage() {
                         <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>{dish.name}</h3>
                         {dish.description && <p className="lc2" style={{ color: TX2, fontSize: 12, lineHeight: 1.5 }}>{dish.description}</p>}
                         <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {pro ? (<><span style={{ color: TX3, fontSize: 13, textDecoration: 'line-through' }}>{dish.price.toLocaleString()} F</span><span style={{ color: G, fontWeight: 700, fontSize: 16 }}>{dish.promo_price.toLocaleString()} F</span></>) : (<span style={{ color: PRC, fontWeight: 700, fontSize: 16 }}>{dish.price.toLocaleString()} F</span>)}
+                          {pro ? (<><span style={{ color: TX3, fontSize: 13, textDecoration: 'line-through' }}>{dish.price.toLocaleString()} F</span><span style={{ color: dark ? '#FBBF24' : G, fontWeight: 700, fontSize: 16 }}>{dish.promo_price.toLocaleString()} F</span></>) : (<span style={{ color: dark ? '#FBBF24' : PRC, fontWeight: 700, fontSize: 16 }}>{dish.price.toLocaleString()} F</span>)}
                         </div>
                       </div>
                       <div style={{ flexShrink: 0 }}>
@@ -420,10 +420,11 @@ export default function MenuPage() {
       {/* Ads - only for free plan */}
       {!isPremium && ads.length > 0 && (
         <div style={{ maxWidth: 500, margin: '0 auto', padding: '0 16px 16px' }}>
+          <div style={{ display: 'flex', overflowX: 'auto', gap: 10, scrollbarWidth: 'none', scrollSnapType: 'x mandatory', paddingBottom: 4 }}>
           {ads.map(ad => {
             const imgs = adImages.filter(i => i.ad_id === ad.id);
             return (
-              <div key={ad.id} style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#fff', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.06)' : '#E5E7EB'), borderRadius: 14, overflow: 'hidden', marginBottom: 10 }}>
+              <div key={ad.id} style={{ background: dark ? 'rgba(255,255,255,0.03)' : '#fff', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.06)' : '#E5E7EB'), borderRadius: 14, overflow: 'hidden', minWidth: ads.length > 1 ? '85%' : '100%', flexShrink: 0, scrollSnapAlign: 'start' }}>
                 {imgs.length > 0 && (
                   <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 2, scrollSnapType: 'x mandatory' }}>
                     {imgs.map(img => {
@@ -447,6 +448,7 @@ export default function MenuPage() {
               </div>
             );
           })}
+          </div>
         </div>
       )}
 

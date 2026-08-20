@@ -386,6 +386,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
+      <div style={{ background: '#1A1917', padding: '6px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+        <span>Besoin d aide ?</span>
+        <a href="mailto:senecop95@gmail.com" style={{ color: '#E0CD57', textDecoration: 'none', fontWeight: 500 }}>senecop95@gmail.com</a>
+        <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
+        <a href="https://wa.me/221766196090" target="_blank" style={{ color: '#25D366', textDecoration: 'none', fontWeight: 500 }}>WhatsApp</a>
+      </div>
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
