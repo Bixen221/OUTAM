@@ -19,11 +19,11 @@ export default function MenuPage() {
   const [showCart, setShowCart] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(false);
   const [dailySpecials, setDailySpecials] = useState<any[]>([]);
   const [ads, setAds] = useState<any[]>([]);
   const [adImages, setAdImages] = useState<any[]>([]);
-  const [grid, setGrid] = useState(false);
+  const [grid, setGrid] = useState(true);
   const [tableNum, setTableNum] = useState('');
   const cartRef = useRef<HTMLDivElement>(null);
 
@@ -451,7 +451,11 @@ export default function MenuPage() {
                     }, []);
                     return (
                       <div style={{ position: 'relative', overflow: 'hidden' }}>
-                        <img src={imgs[idx].image_url} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: dark ? '#111' : '#F3F4F6', transition: 'opacity 0.5s' }} />
+                        <div style={{ display: 'flex', transition: 'transform 0.5s ease', transform: 'translateX(-' + (idx * 100) + '%)' }}>
+                          {imgs.map((img, ii) => (
+                            <img key={ii} src={img.image_url} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: dark ? '#111' : '#F3F4F6', flexShrink: 0 }} />
+                          ))}
+                        </div>
                         <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 4 }}>
                           {imgs.map((_, i) => (
                             <div key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }} style={{ width: i === idx ? 16 : 6, height: 6, borderRadius: 3, background: i === idx ? '#fff' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s', cursor: 'pointer' }} />
