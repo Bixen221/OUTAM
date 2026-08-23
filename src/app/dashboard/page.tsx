@@ -581,6 +581,8 @@ export default function Dashboard() {
           </div>
         )}
 
+        <div style={{ height: 8 }} />
+
         {/* Menu du jour */}
         <div style={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', borderRadius: 16, padding: 20, border: '1px solid #FCD34D' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
