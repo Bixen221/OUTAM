@@ -251,7 +251,7 @@ export default function Dashboard() {
     const { data: dsh } = await supabase.from('catalog_dishes').select('*').is('deleted_at', null).order('sort_order');
     const catalog = (cats || []).map(c => ({
       category: c.name, emoji: c.emoji,
-      dishes: (dsh || []).filter(d => d.category_id === c.id).map(d => ({ name: d.name, desc: d.description }))
+      dishes: (dsh || []).filter(d => d.category_id === c.id).map(d => ({ name: d.name, desc: d.description, image_url: d.image_url || '' }))
     }));
     setCatalogData(catalog);
   }
@@ -316,7 +316,7 @@ export default function Dashboard() {
       if (existing) continue;
       await supabase.from('dishes').insert({
         restaurant_id: restaurant.id, category_id: catId, name: dishInfo.name,
-        description: dishInfo.desc, price: price, sort_order: dishes.length + count,
+        description: dishInfo.desc, price: price, image_url: dishInfo.image_url || '', sort_order: dishes.length + count,
       });
       count++;
     }
@@ -642,7 +642,7 @@ export default function Dashboard() {
                               {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 40, height: 40, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🍽️</div>}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p style={{ fontWeight: 500, fontSize: 13 }}>{dish.name}</p>
-                                <p style={{ fontSize: 11, color: '#9CA3AF' }}>{dish.price.toLocaleString()} F</p>
+                                <p style={{ fontSize: 11, color: '#9CA3AF' }}>{dish.price?.toLocaleString() || 0} F</p>
                               </div>
                               {alreadySpecial ? (
                                 <span style={{ fontSize: 11, color: '#16A34A', fontWeight: 600 }}>✓ Ajoute</span>

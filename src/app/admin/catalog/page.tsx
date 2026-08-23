@@ -13,8 +13,9 @@ export default function AdminCatalog() {
   const [newCat, setNewCat] = useState({ name: '', emoji: '' });
   const [editCat, setEditCat] = useState(null);
   const [showAddDish, setShowAddDish] = useState(false);
-  const [dishForm, setDishForm] = useState({ name: '', description: '', category_id: '' });
+  const [dishForm, setDishForm] = useState({ name: '', description: '', category_id: '', image: null });
   const [editDish, setEditDish] = useState(null);
+  const [editDishImage, setEditDishImage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
   const [trashedCats, setTrashedCats] = useState([]);
@@ -89,19 +90,32 @@ export default function AdminCatalog() {
     loadData(); showToast('Categorie supprimee definitivement');
   }
 
+  async function uploadCatalogImage(file) {
+    const ext = file.name.split('.').pop();
+    const name = 'catalog_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '.' + ext;
+    const { error } = await supabase.storage.from('dish-images').upload(name, file, { contentType: file.type });
+    if (error) return '';
+    const { data } = supabase.storage.from('dish-images').getPublicUrl(name);
+    return data.publicUrl;
+  }
+
   async function addDish() {
     if (!dishForm.name.trim() || !dishForm.category_id) { showToast('Remplissez le nom et la categorie', 'error'); return; }
     setSaving(true);
     const catDishes = dishes.filter(d => d.category_id === parseInt(dishForm.category_id));
-    await supabase.from('catalog_dishes').insert({ name: dishForm.name.trim(), description: dishForm.description.trim(), category_id: parseInt(dishForm.category_id), sort_order: catDishes.length });
-    setDishForm({ name: '', description: '', category_id: '' }); setShowAddDish(false); setSaving(false); loadData(); showToast('Plat ajoute au catalogue');
+    let imgUrl = '';
+    if (dishForm.image) { imgUrl = await uploadCatalogImage(dishForm.image); }
+    await supabase.from('catalog_dishes').insert({ name: dishForm.name.trim(), description: dishForm.description.trim(), category_id: parseInt(dishForm.category_id), sort_order: catDishes.length, image_url: imgUrl });
+    setDishForm({ name: '', description: '', category_id: '', image: null }); setShowAddDish(false); setSaving(false); loadData(); showToast('Plat ajoute au catalogue');
   }
 
   async function updateDish() {
     if (!editDish || !editDish.name.trim()) return;
     setSaving(true);
-    await supabase.from('catalog_dishes').update({ name: editDish.name, description: editDish.description, category_id: editDish.category_id }).eq('id', editDish.id);
-    setEditDish(null); setSaving(false); loadData(); showToast('Plat modifie');
+    let editImgUrl = editDish.image_url || '';
+    if (editDishImage) { editImgUrl = await uploadCatalogImage(editDishImage); }
+    await supabase.from('catalog_dishes').update({ name: editDish.name, description: editDish.description, category_id: editDish.category_id, image_url: editImgUrl }).eq('id', editDish.id);
+    setEditDish(null); setEditDishImage(null); setSaving(false); loadData(); showToast('Plat modifie');
   }
 
   async function deleteDish(id) {
@@ -202,7 +216,11 @@ export default function AdminCatalog() {
                   {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
                 </select>
               </div>
-              <div className="md:col-span-2">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label>
+                <input type="file" accept="image/*" onChange={e => setDishForm({...dishForm, image: e.target.files?.[0] || null})} className="input-field text-sm" />
+              </div>
+              <div>
                 <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label>
                 <textarea value={dishForm.description} onChange={e => setDishForm({...dishForm, description: e.target.value})} placeholder="Description du plat..." className="input-field" rows={2} />
               </div>
@@ -229,7 +247,14 @@ export default function AdminCatalog() {
                   {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
                 </select>
               </div>
-              <div className="md:col-span-2">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {editDish.image_url && <img src={editDish.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />}
+                  <input type="file" accept="image/*" onChange={e => setEditDishImage(e.target.files?.[0] || null)} className="input-field text-sm" style={{ flex: 1 }} />
+                </div>
+              </div>
+              <div>
                 <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label>
                 <textarea value={editDish.description} onChange={e => setEditDish({...editDish, description: e.target.value})} className="input-field" rows={2} />
               </div>
@@ -262,6 +287,7 @@ export default function AdminCatalog() {
               <div className="space-y-2">
                 {catDishes.map(dish => (
                   <div key={dish.id} className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-3 hover:border-brand-200 transition-colors">
+                    {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🍽️</div>}
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">{dish.name}</p>
                       {dish.description && <p className="text-xs text-gray-400 mt-0.5 truncate">{dish.description}</p>}
