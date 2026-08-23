@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [selectedItems, setSelectedItems] = useState({});
   const [catalogPrices, setCatalogPrices] = useState({});
   const [importing, setImporting] = useState(false);
+  const [catalogPreview, setCatalogPreview] = useState(null);
   const [earnings, setEarnings] = useState(null);
   const [showPremiumPanel, setShowPremiumPanel] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
@@ -244,6 +245,23 @@ export default function Dashboard() {
   async function deleteSpecial(id) {
     await supabase.from('daily_specials').delete().eq('id', id);
     loadData(); showToast('Plat du jour supprime');
+  }
+
+  function prefillFromCatalog(catName, dish) {
+    const cat = categories.find(cc => cc.name === catName);
+    setDishForm({
+      name: dish.name,
+      price: '',
+      description: dish.desc || '',
+      category_id: cat ? cat.id.toString() : categories[0]?.id?.toString() || '',
+      image: null,
+      promo_price: '',
+      promo_expires_at: ''
+    });
+    setEditDish(null);
+    setShowAddDish(true);
+    setShowCatalog(false);
+    showToast('Modifiez le plat et ajoutez votre prix');
   }
 
   async function loadCatalog() {
@@ -824,12 +842,16 @@ export default function Dashboard() {
                               <p style={{ fontWeight: 500, fontSize: 14 }}>{dish.name}</p>
                               {dish.desc && <p style={{ color: '#9CA3AF', fontSize: 11, marginTop: 1 }}>{dish.desc}</p>}
                             </div>
-                            {sel && (
-                              <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0 }}>
-                                <input type="number" min="0" placeholder="Prix" value={catalogPrices[key] || ''} onChange={e => setCatalogPrice(cat.category, dish.name, e.target.value)} style={{ width: 80, padding: '6px 8px', borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 13, textAlign: 'right', outline: 'none' }} />
-                                <span style={{ fontSize: 11, color: '#9CA3AF', marginLeft: 4 }}>F</span>
-                              </div>
-                            )}
+                            <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                              {sel ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <input type="number" min="0" placeholder="Prix" value={catalogPrices[key] || ''} onChange={e => setCatalogPrice(cat.category, dish.name, e.target.value)} style={{ width: 72, padding: '6px 8px', borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 13, textAlign: 'right', outline: 'none' }} />
+                                  <span style={{ fontSize: 11, color: '#9CA3AF' }}>F</span>
+                                </div>
+                              ) : (
+                                <button onClick={() => prefillFromCatalog(cat.category, dish)} style={{ padding: '5px 10px', borderRadius: 8, background: '#EEF2FF', color: '#4F46E5', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 500, whiteSpace: 'nowrap' }}>Personnaliser</button>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
