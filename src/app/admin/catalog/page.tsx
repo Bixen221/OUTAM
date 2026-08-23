@@ -170,7 +170,7 @@ export default function AdminCatalog() {
           <div className="flex gap-2">
             <button onClick={() => setShowTrash(!showTrash)} className="btn-ghost text-xs" style={{ position: 'relative' }}>{showTrash ? 'Catalogue' : 'Corbeille'}{!showTrash && (trashedCats.length + trashedDishes.length) > 0 && <span style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#DC2626', color: '#fff', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{trashedCats.length + trashedDishes.length}</span>}</button>
             <button onClick={() => setShowAddCat(true)} className="btn-ghost text-xs">+ Categorie</button>
-            <button onClick={() => { setDishForm({ name: '', description: '', category_id: categories[0]?.id?.toString() || '' }); setShowAddDish(true); }} className="btn-primary text-xs">+ Plat</button>
+            <button onClick={() => { setDishForm({ name: '', description: '', category_id: categories[0]?.id?.toString() || '', image: null }); setShowAddDish(true); }} className="btn-primary text-xs">+ Plat</button>
           </div>
         </div>
 
