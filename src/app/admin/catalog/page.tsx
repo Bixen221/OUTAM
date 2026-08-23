@@ -232,39 +232,7 @@ export default function AdminCatalog() {
           </div>
         )}
 
-        {/* Edit dish form */}
-        {editDish && (
-          <div className="bg-white rounded-2xl p-5 border border-amber-200 mb-4">
-            <h3 className="font-bold text-sm mb-3">Modifier le plat</h3>
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Nom *</label>
-                <input type="text" value={editDish.name} onChange={e => setEditDish({...editDish, name: e.target.value})} className="input-field" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Categorie *</label>
-                <select value={editDish.category_id} onChange={e => setEditDish({...editDish, category_id: parseInt(e.target.value)})} className="input-field">
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {editDish.image_url && <img src={editDish.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />}
-                  <input type="file" accept="image/*" onChange={e => setEditDishImage(e.target.files?.[0] || null)} className="input-field text-sm" style={{ flex: 1 }} />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label>
-                <textarea value={editDish.description} onChange={e => setEditDish({...editDish, description: e.target.value})} className="input-field" rows={2} />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-3">
-              <button onClick={updateDish} disabled={saving} className="btn-primary text-sm">{saving ? '...' : 'Enregistrer'}</button>
-              <button onClick={() => setEditDish(null)} className="btn-ghost text-sm">Annuler</button>
-            </div>
-          </div>
-        )}
+
 
         {/* Categories and dishes list */}
         {categories.length === 0 ? (
@@ -286,16 +254,49 @@ export default function AdminCatalog() {
               </div>
               <div className="space-y-2">
                 {catDishes.map(dish => (
-                  <div key={dish.id} className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-3 hover:border-brand-200 transition-colors">
-                    {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🍽️</div>}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm">{dish.name}</p>
-                      {dish.description && <p className="text-xs text-gray-400 mt-0.5 truncate">{dish.description}</p>}
+                  <div key={dish.id}>
+                    <div className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-3 hover:border-brand-200 transition-colors" style={{ borderBottomLeftRadius: editDish?.id === dish.id ? 0 : undefined, borderBottomRightRadius: editDish?.id === dish.id ? 0 : undefined, borderColor: editDish?.id === dish.id ? '#FCD34D' : undefined }}>
+                      {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 10, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🍽️</div>}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm">{dish.name}</p>
+                        {dish.description && <p className="text-xs text-gray-400 mt-0.5 truncate">{dish.description}</p>}
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button onClick={() => { if (editDish?.id === dish.id) { setEditDish(null); } else { setEditDish({...dish}); setEditDishImage(null); setShowAddDish(false); } }} className={'text-[10px] px-2 py-1 rounded-full ' + (editDish?.id === dish.id ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500 hover:bg-brand-50 hover:text-brand-500')}>{editDish?.id === dish.id ? 'Fermer' : 'Modifier'}</button>
+                        <button onClick={() => deleteDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500">Supprimer</button>
+                      </div>
                     </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <button onClick={() => { setEditDish({...dish}); setShowAddDish(false); }} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-500 hover:bg-brand-50 hover:text-brand-500">Modifier</button>
-                      <button onClick={() => deleteDish(dish.id)} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500">Supprimer</button>
-                    </div>
+                    {editDish?.id === dish.id && (
+                      <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: 16 }}>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Nom *</label>
+                            <input type="text" value={editDish.name} onChange={e => setEditDish({...editDish, name: e.target.value})} className="input-field" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Categorie *</label>
+                            <select value={editDish.category_id} onChange={e => setEditDish({...editDish, category_id: parseInt(e.target.value)})} className="input-field">
+                              {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Photo</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              {editDish.image_url && <img src={editDish.image_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
+                              <input type="file" accept="image/*" onChange={e => setEditDishImage(e.target.files?.[0] || null)} className="input-field text-sm" style={{ flex: 1 }} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">Description</label>
+                            <textarea value={editDish.description} onChange={e => setEditDish({...editDish, description: e.target.value})} className="input-field" rows={2} />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button onClick={updateDish} disabled={saving} className="btn-primary text-xs">{saving ? '...' : 'Enregistrer'}</button>
+                          <button onClick={() => setEditDish(null)} className="btn-ghost text-xs">Annuler</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {catDishes.length === 0 && <p className="text-sm text-gray-400 py-3 text-center">Aucun plat dans cette categorie</p>}
