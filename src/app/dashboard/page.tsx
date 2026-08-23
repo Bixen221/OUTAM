@@ -430,7 +430,7 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-white rounded-2xl p-4 border border-gray-100 text-center"><div className="text-2xl font-bold text-brand-500">{dishes.length}</div><div className="text-xs text-gray-400 mt-0.5">Plats</div></div>
           <div className="bg-white rounded-2xl p-4 border border-gray-100 text-center"><div className="text-2xl font-bold text-brand-500">{categories.length}</div><div className="text-xs text-gray-400 mt-0.5">Catégories</div></div>
