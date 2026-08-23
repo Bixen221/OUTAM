@@ -405,7 +405,7 @@ export default function MenuPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' as any, gap: 10 }}>
                   {/* Table number - PREMIUM FEATURE */}
-                  {isPremium && (
+                  {restaurant?.show_table_number && (
                   <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, background: dark ? 'rgba(255,255,255,0.04)' : '#F9FAFB', border: '1px solid ' + (dark ? 'rgba(255,255,255,0.08)' : '#E5E7EB') }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: TX2, marginBottom: 8 }}>Numero de table (facultatif)</p>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -427,7 +427,7 @@ export default function MenuPage() {
       )}
 
       {/* Ads - only for free plan */}
-      {!isPremium && ads.length > 0 && (
+      {(!isPremium || restaurant?.show_ads) && ads.length > 0 && (
         <div style={{ maxWidth: 500, margin: '0 auto', padding: '0 16px 16px' }}>
           <div style={{ display: 'flex', overflowX: 'auto', gap: 10, scrollbarWidth: 'none', scrollSnapType: 'x mandatory', paddingBottom: 4 }}>
           {ads.map(ad => {
@@ -482,7 +482,7 @@ export default function MenuPage() {
       )}
 
       {/* Footer */}
-      {!isPremium && <div style={{ textAlign: 'center', padding: '24px 0', fontSize: 11, color: TX3 }}>Menu cree avec <a href="/" style={{ color: G, textDecoration: 'none' }}>Outam</a></div>}
+      {(!isPremium || !restaurant?.hide_branding) && <div style={{ textAlign: 'center', padding: '24px 0', fontSize: 11, color: TX3 }}>Menu cree avec <a href="/" style={{ color: G, textDecoration: 'none' }}>Outam</a></div>}
     </div>
   );
 }

@@ -25,6 +25,8 @@ export default function Dashboard() {
   const [selectedItems, setSelectedItems] = useState({});
   const [catalogPrices, setCatalogPrices] = useState({});
   const [importing, setImporting] = useState(false);
+  const [earnings, setEarnings] = useState(null);
+  const [showPremiumPanel, setShowPremiumPanel] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
   const [dailySpecials, setDailySpecials] = useState([]);
   const [showAddSpecial, setShowAddSpecial] = useState(false);
@@ -59,6 +61,12 @@ export default function Dashboard() {
     setScansCount(total || 0);
     const { count: todayCount } = await supabase.from('menu_scans').select('*', { count: 'exact', head: true }).eq('restaurant_id', resto.id).gte('scanned_at', today);
     setScansToday(todayCount || 0);
+    // Load earnings
+    if (resto.plan === 'premium') {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const { data: earn } = await supabase.from('restaurant_earnings').select('*').eq('restaurant_id', resto.id).eq('month', currentMonth).single();
+      setEarnings(earn);
+    }
     setLoading(false);
     generateQR(resto);
   }
@@ -351,6 +359,20 @@ export default function Dashboard() {
     loadData(); showToast('Corbeille videe');
   }
 
+  function getCommissionRate(scans) {
+    if (scans >= 5000) return 15;
+    if (scans >= 1000) return 12;
+    if (scans >= 500) return 10;
+    if (scans >= 100) return 8;
+    return 5;
+  }
+
+  async function togglePremiumOption(field, value) {
+    await supabase.from('restaurants').update({ [field]: !value }).eq('id', restaurant.id);
+    setRestaurant(prev => ({ ...prev, [field]: !value }));
+    showToast((!value ? 'Active' : 'Desactive'));
+  }
+
   async function logout() { await supabase.auth.signOut(); router.push('/'); }
 
   function showToast(msg, type = 'success') {
@@ -484,6 +506,78 @@ export default function Dashboard() {
             <div style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: dailySpecials.length >= maxSpecials ? '#FEF2F2' : '#F0FDF4', border: '1px solid ' + (dailySpecials.length >= maxSpecials ? '#FECACA' : '#BBF7D0'), fontSize: 12 }}>
               <span style={{ fontWeight: 600 }}>{dailySpecials.length}/{maxSpecials}</span> <span style={{ color: '#6B7280' }}>plats du jour</span>
             </div>
+          </div>
+        )}
+
+        {/* Premium Panel */}
+        {isPremium && (
+          <div style={{ background: 'linear-gradient(135deg, #0A0A0A, #1A1917)', borderRadius: 16, padding: 20, border: '1px solid rgba(224,205,87,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>👑</span>
+                <h2 style={{ color: '#E0CD57', fontWeight: 700, fontSize: 16 }}>Plan Premium</h2>
+                {restaurant?.premium_expires_at && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Expire le {new Date(restaurant.premium_expires_at).toLocaleDateString('fr-FR')}</span>}
+              </div>
+              <button onClick={() => setShowPremiumPanel(!showPremiumPanel)} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 20, background: 'rgba(224,205,87,0.15)', color: '#E0CD57', border: '1px solid rgba(224,205,87,0.2)', cursor: 'pointer', fontWeight: 500 }}>{showPremiumPanel ? 'Fermer' : 'Options'}</button>
+            </div>
+
+            {/* Earnings summary */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: showPremiumPanel ? 16 : 0 }}>
+              <div style={{ flex: 1, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <p style={{ color: '#E0CD57', fontWeight: 700, fontSize: 20 }}>{earnings?.earned_amount?.toLocaleString() || 0} F</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, marginTop: 2 }}>Gains ce mois</p>
+              </div>
+              <div style={{ flex: 1, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: 20 }}>{getCommissionRate(scansCount)}%</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, marginTop: 2 }}>Taux commission</p>
+              </div>
+              <div style={{ flex: 1, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: 20 }}>{earnings?.ad_impressions || 0}</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, marginTop: 2 }}>Impressions pubs</p>
+              </div>
+            </div>
+
+            {/* Premium options toggles */}
+            {showPremiumPanel && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginBottom: 4 }}>Activez ou desactivez vos options Premium</p>
+
+                {/* Show ads toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <p style={{ color: '#fff', fontWeight: 500, fontSize: 13 }}>Afficher les publicites</p>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 }}>Gagnez {getCommissionRate(scansCount)}% sur chaque pub affichee. Versement a N+1.</p>
+                  </div>
+                  <button onClick={() => togglePremiumOption('show_ads', restaurant?.show_ads)} style={{ width: 48, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', background: restaurant?.show_ads ? '#16A34A' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s', position: 'relative' }}>
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: restaurant?.show_ads ? 23 : 3, transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                  </button>
+                </div>
+
+                {/* Table number toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <p style={{ color: '#fff', fontWeight: 500, fontSize: 13 }}>Numero de table</p>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 }}>Les clients choisissent leur table dans la commande PDF.</p>
+                  </div>
+                  <button onClick={() => togglePremiumOption('show_table_number', restaurant?.show_table_number)} style={{ width: 48, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', background: restaurant?.show_table_number ? '#16A34A' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s', position: 'relative' }}>
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: restaurant?.show_table_number ? 23 : 3, transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                  </button>
+                </div>
+
+                {/* Hide branding toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <p style={{ color: '#fff', fontWeight: 500, fontSize: 13 }}>Masquer le branding Outam</p>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 }}>Retire "Menu cree avec Outam" du menu public.</p>
+                  </div>
+                  <button onClick={() => togglePremiumOption('hide_branding', restaurant?.hide_branding)} style={{ width: 48, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer', background: restaurant?.hide_branding ? '#16A34A' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s', position: 'relative' }}>
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: restaurant?.hide_branding ? 23 : 3, transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                  </button>
+                </div>
+
+                <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, textAlign: 'center', marginTop: 4 }}>Les gains sont verses le mois suivant (N+1) par transfert mobile.</p>
+              </div>
+            )}
           </div>
         )}
 
